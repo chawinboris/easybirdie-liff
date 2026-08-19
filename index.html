@@ -172,6 +172,8 @@ let selectedPayment = null;
 let lineUserId = "guest-test-user"; // ค่า default ตอนทดสอบนอก LINE
 let lineDisplayName = "";
 
+ let currentBookedSlots = []; // เพิ่มบรรทัดนี้เพื่อเก็บข้อมูลเวลาที่จองแล้ว
+
 // ---------- INIT ----------
 window.onload = async () => {
   try {
@@ -239,9 +241,12 @@ async function loadBookedSlots() {
   const res = await fetch(
     `${WEBAPP_URL}?action=getBookedSlots&bayId=${selectedBay.bay_id}&date=${date}`
   );
-  const slots = await res.json();
-  if (Array.isArray(slots) && slots.length > 0) {
-    box.textContent = "ไม่ว่าง: " + slots.map(s => `${s.start}-${s.end}`).join(", ");
+  
+  currentBookedSlots = await res.json(); // เก็บค่าลงตัวแปรที่เพิ่งสร้าง
+
+  if (Array.isArray(currentBookedSlots) && currentBookedSlots.length > 0) {
+    box.textContent = "ไม่ว่าง: " + currentBookedSlots.map(s => `${s.start}-${s.end}`).join(", ");
+    box.style.color = "#ffb4b4"; // เปลี่ยนสีให้เห็นชัด
   } else {
     box.textContent = "วันนี้ยังว่างทุกช่วงเวลา ✅";
     box.style.color = "#9fd8b8";
@@ -296,6 +301,38 @@ document.getElementById("submitBtn").onclick = async () => {
   const hours = Number(document.getElementById("duration").value);
   const endHour = (Number(startTime.split(":")[0]) + hours).toString().padStart(2, "0");
   const endTime = endHour + ":00";
+
+ const endHour = (Number(startTime.split(":")[0]) + hours).toString().padStart(2, "0");
+  const endTime = endHour + ":00";
+
+  // ==============================================================
+  // 🟢 เริ่มต้น: โค้ดที่เพิ่มเข้ามาใหม่เพื่อเช็คเวลาซ้อน
+  const startNum = Number(startTime.split(":")[0]);
+  const endNum = Number(endHour);
+  let isOverlap = false;
+
+  if (Array.isArray(currentBookedSlots)) {
+    for (let slot of currentBookedSlots) {
+      const bookedStartNum = Number(slot.start.split(":")[0]);
+      const bookedEndNum = Number(slot.end.split(":")[0]);
+      
+      // ถ้าเวลาเริ่มหรือเวลาจบ ไปเกยกับคิวที่มีอยู่แล้ว ให้ถือว่าซ้อนทับกัน (Overlap)
+      if (startNum < bookedEndNum && endNum > bookedStartNum) {
+        isOverlap = true;
+        break;
+      }
+    }
+  }
+
+  // ถ้าเช็คแล้วพบว่าเวลาซ้อนกัน ให้เด้งข้อความ Error สีแดง แล้วหยุดการทำงานทันที (return)
+  if (isOverlap) {
+    return showMsg("❌ ช่วงเวลาที่คุณเลือกมีการจองไปแล้ว กรุณาเลือกเวลาใหม่ครับ", "error");
+  }
+  // 🟢 สิ้นสุด: โค้ดที่เพิ่มเข้ามาใหม่
+  // ==============================================================
+
+  const resultBox = document.getElementById("resultMsg");
+  resultBox.innerHTML = "";
 
   const resultBox = document.getElementById("resultMsg");
   resultBox.innerHTML = "";
