@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>สมัคร Member - Golf Simulator</title>
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", "Sarabun", sans-serif;
+    background: #0f2418;
+    color: #fff;
+    margin: 0;
+    padding: 16px;
+  }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: #9fd8b8; font-size: 13px; margin-bottom: 20px; }
+  .card {
+    background: #163a26;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 14px;
+  }
+  .price-box {
+    text-align: center;
+    padding: 20px;
+  }
+  .price-box .amount { font-size: 36px; font-weight: bold; color: #4ade80; }
+  .price-box .period { font-size: 14px; color: #9fd8b8; margin-top: 4px; }
+  .benefits { font-size: 13px; color: #cdeedd; margin-top: 14px; line-height: 1.8; }
+  label { display: block; font-size: 14px; margin: 10px 0 6px; color: #cdeedd; }
+  input[type=text], input[type=tel] {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #2c5c40;
+    background: #0f2418;
+    color: #fff;
+    font-size: 15px;
+  }
+  .pay-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border: 2px solid #2c5c40;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+  }
+  .pay-option.selected { border-color: #4ade80; background: #1c4a2e; }
+  button.submit {
+    width: 100%;
+    padding: 16px;
+    border-radius: 12px;
+    border: none;
+    background: #4ade80;
+    color: #0f2418;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  button.submit:disabled { background: #375; color: #9fd8b8; }
+  .msg { padding: 12px; border-radius: 10px; margin-top: 12px; font-size: 14px; }
+  .msg.error { background: #4a1c1c; color: #ffb4b4; }
+  .msg.success { background: #1c4a2e; color: #baffd6; font-size: 15px; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<h1>⭐ สมัคร / ต่ออายุ Member</h1>
+<div class="sub">รับสิทธิ์ราคาพิเศษทุก Bay ตลอดปี</div>
+
+<div class="card">
+  <div class="price-box">
+    <div class="amount">3,000 บาท</div>
+    <div class="period">ต่อปี (365 วัน)</div>
+  </div>
+  <div class="benefits">
+    ✅ Trackman 4 VIP: 500 บาท/ชม. (จากราคาปกติ 700)<br/>
+    ✅ Trackman 4 พื้นที่ส่วนกลาง: 400 บาท/ชม. (จากราคาปกติ 600)<br/>
+    ✅ Garmin R50: 350 บาท/ชม. (จากราคาปกติ 450)<br/>
+    ✅ หากเคยเป็นสมาชิกอยู่แล้ว ระบบจะ<b>ต่ออายุให้อัตโนมัติ</b> ไม่ออกเลขสมาชิกใหม่ซ้ำซ้อน
+  </div>
+</div>
+
+<div class="card">
+  <label>ชื่อ-นามสกุล</label>
+  <input type="text" id="customerName" placeholder="ชื่อลูกค้า" />
+
+  <label>เบอร์โทรศัพท์</label>
+  <input type="tel" id="phone" placeholder="08xxxxxxxx" />
+</div>
+
+<div class="card">
+  <label>วิธีการชำระเงิน</label>
+  <div class="pay-option" id="payQR" data-val="QR">
+    <span>💳</span><span>QR Code Payment</span>
+  </div>
+  <div class="pay-option" id="payCash" data-val="CASH">
+    <span>💵</span><span>Cash / ชำระที่หน้าร้าน</span>
+  </div>
+</div>
+
+<button class="submit" id="submitBtn">สมัคร / ต่ออายุ Member</button>
+<div id="resultMsg"></div>
+
+<script>
+// ⚠️ Web App URL เดียวกับหน้าจอง (ใช้ backend ตัวเดียวกัน)
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz4tmq9UXnu_TApw3YSrlRCq9Cxy152DmW47B5GGRKxrDOf2NksPkfL2EvkDbodH9_8lw/exec";
+
+// ⚠️ ใส่ LIFF ID ของหน้านี้ (คนละอันกับหน้าจอง ต้องสร้าง LIFF app ใหม่แยกต่างหาก)
+const LIFF_ID = "YOUR_MEMBER_LIFF_ID_HERE";
+
+let selectedPayment = null;
+let lineUserId = "guest-test-user";
+
+window.onload = async () => {
+  try {
+    if (LIFF_ID !== "YOUR_MEMBER_LIFF_ID_HERE") {
+      await liff.init({ liffId: LIFF_ID });
+      if (liff.isLoggedIn()) {
+        const profile = await liff.getProfile();
+        lineUserId = profile.userId;
+        document.getElementById("customerName").value = profile.displayName;
+      } else {
+        liff.login();
+      }
+    }
+  } catch (err) {
+    console.log("LIFF init skipped/failed (ok ถ้ากำลังทดสอบนอกแอป LINE):", err);
+  }
+};
+
+document.getElementById("payQR").onclick = () => selectPayment("QR");
+document.getElementById("payCash").onclick = () => selectPayment("CASH");
+function selectPayment(val) {
+  selectedPayment = val;
+  document.getElementById("payQR").classList.toggle("selected", val === "QR");
+  document.getElementById("payCash").classList.toggle("selected", val === "CASH");
+}
+
+document.getElementById("submitBtn").onclick = async () => {
+  const name = document.getElementById("customerName").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+
+  if (!name || !phone) return showMsg("กรุณากรอกชื่อและเบอร์โทรศัพท์", "error");
+  if (!selectedPayment) return showMsg("กรุณาเลือกวิธีชำระเงิน", "error");
+
+  document.getElementById("submitBtn").disabled = true;
+  document.getElementById("submitBtn").textContent = "กำลังบันทึก...";
+
+  const payload = {
+    action: "createPaidMembership",
+    data: { name, phone, lineUserId }
+  };
+
+  try {
+    const res = await fetch(WEBAPP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+
+    if (result.success) {
+      const verb = result.renewed ? "ต่ออายุสำเร็จ" : "สมัครสำเร็จ";
+      showMsg(
+        `✅ ${verb}!<br/>เลขสมาชิกของคุณ: <b>${result.memberId}</b><br/>หมดอายุ: ${result.expiryDate}<br/><br/>` +
+        `กรุณาชำระเงิน ${selectedPayment === "QR" ? "ผ่าน QR Code" : "ที่หน้าร้าน"} และจำเลขสมาชิกไว้ใช้ตอนจองครั้งถัดไป`,
+        "success"
+      );
+    } else {
+      showMsg("❌ " + result.message, "error");
+    }
+  } catch (err) {
+    showMsg("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + err.message, "error");
+  }
+
+  document.getElementById("submitBtn").disabled = false;
+  document.getElementById("submitBtn").textContent = "สมัคร / ต่ออายุ Member";
+};
+
+function showMsg(text, type) {
+  document.getElementById("resultMsg").innerHTML = `<div class="msg ${type}">${text}</div>`;
+}
+</script>
+</body>
+</html>
