@@ -211,18 +211,28 @@ function buildTimeOptions() {
 
 // ---------- โหลดรายชื่อ Bay ----------
 async function loadBays() {
-  const res = await fetch(WEBAPP_URL + "?action=getBays");
-  bays = await res.json();
   const list = document.getElementById("bayList");
-  list.innerHTML = "";
-  bays.forEach(bay => {
-    const btn = document.createElement("div");
-    btn.className = "bay-btn";
-    btn.innerHTML = `<div>${bay.bay_name}</div>
-      <div class="price">บุคคลทั่วไป ${bay.price_regular} บาท/ชม. · Member ${bay.price_member} บาท/ชม.</div>`;
-    btn.onclick = () => selectBay(bay, btn);
-    list.appendChild(btn);
-  });
+  try {
+    const res = await fetch(WEBAPP_URL + "?action=getBays");
+    
+    // ถ้าฝั่ง Google พ่น Error กลับมา (เช่น ติด Permission)
+    if (!res.ok) throw new Error("การเชื่อมต่อกับระบบฐานข้อมูลล้มเหลว");
+    
+    bays = await res.json();
+    list.innerHTML = "";
+    bays.forEach(bay => {
+      const btn = document.createElement("div");
+      btn.className = "bay-btn";
+      btn.innerHTML = `<div>${bay.bay_name}</div>
+        <div class="price">บุคคลทั่วไป ${bay.price_regular} บาท/ชม. · Member ${bay.price_member} บาท/ชม.</div>`;
+      btn.onclick = () => selectBay(bay, btn);
+      list.appendChild(btn);
+    });
+  } catch (err) {
+    // ถ้าดึงข้อมูลไม่สำเร็จ จะแสดงข้อความ Error สีแดงแทนคำว่า กำลังโหลด...
+    list.innerHTML = `<div style="color: #ffb4b4; padding: 10px; border: 1px solid #ffb4b4; border-radius: 8px;">❌ ไม่สามารถโหลดข้อมูล Bay ได้: <br>${err.message}</div>`;
+    console.error(err);
+  }
 }
 
 function selectBay(bay, el) {
