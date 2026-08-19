@@ -49,7 +49,31 @@
   .bay-btn .price { color: #9fd8b8; font-size: 13px; margin-top: 4px; }
   .row { display: flex; gap: 10px; }
   .row > div { flex: 1; }
-  .booked-list { font-size: 13px; color: #ffb4b4; margin-top: 8px; }
+  .slot-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-top: 6px;
+  }
+  .slot-btn {
+    padding: 10px 4px;
+    border-radius: 8px;
+    border: 2px solid #2c5c40;
+    background: #0f2418;
+    color: #fff;
+    font-size: 13px;
+    text-align: center;
+    cursor: pointer;
+  }
+  .slot-btn.selected { border-color: #4ade80; background: #1c4a2e; }
+  .slot-btn.disabled {
+    background: #1a2620;
+    color: #5c7d6c;
+    border-color: #24382c;
+    cursor: not-allowed;
+    text-decoration: line-through;
+  }
+  .slot-hint { font-size: 12px; color: #9fd8b8; margin-top: 6px; }
   .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
   .checkbox-row input { width: 18px; height: 18px; }
   .pay-option {
@@ -100,22 +124,14 @@
   <label>วันที่ต้องการจอง</label>
   <input type="date" id="bookingDate" />
 
-  <div class="row">
-    <div>
-      <label>เวลาเริ่ม</label>
-      <select id="startTime"></select>
-    </div>
-    <div>
-      <label>จำนวนชั่วโมง</label>
-      <select id="duration">
-        <option value="1">1 ชั่วโมง</option>
-        <option value="2">2 ชั่วโมง</option>
-        <option value="3">3 ชั่วโมง</option>
-        <option value="4">4 ชั่วโมง</option>
-      </select>
-    </div>
+  <label>เลือกเวลาเริ่ม</label>
+  <div class="slot-grid" id="slotGrid">กำลังโหลด...</div>
+  <div class="slot-hint">⬜ ว่าง &nbsp; &nbsp; ▨ สีเทา = ไม่ว่างแล้ว กดเลือกไม่ได้</div>
+
+  <div id="durationBox" class="hidden">
+    <label>จำนวนชั่วโมง</label>
+    <select id="duration"></select>
   </div>
-  <div class="booked-list" id="bookedList"></div>
 </div>
 
 <!-- ================= STEP C: ข้อมูลลูกค้า ================= -->
@@ -190,19 +206,81 @@ window.onload = async () => {
     console.log("LIFF init skipped/failed (ok ถ้ากำลังทดสอบนอกแอป LINE):", err);
   }
 
-  buildTimeOptions();
+  buildSlotGrid();
   await loadBays();
   document.getElementById("bookingDate").valueAsDate = new Date();
-  await loadBookedSlots();
+  await refreshAvailability();
 };
 
-function buildTimeOptions() {
-  const select = document.getElementById("startTime");
+// ---------- สร้างปุ่มเวลาเริ่ม 10:00 - 22:00 ----------
+let selectedStartHour = null;
+let occupiedHours = new Set();
+
+function buildSlotGrid() {
+  const grid = document.getElementById("slotGrid");
+  grid.innerHTML = "";
   for (let h = 10; h <= 22; h++) {
-    const label = String(h).padStart(2, "0") + ":00";
+    const btn = document.createElement("div");
+    btn.className = "slot-btn";
+    btn.textContent = String(h).padStart(2, "0") + ":00";
+    btn.dataset.hour = h;
+    btn.onclick = () => onSlotClick(h, btn);
+    grid.appendChild(btn);
+  }
+}
+
+function timeStrToMinutes(t) {
+  const [h, m] = String(t).split(":").map(Number);
+  return h * 60 + m;
+}
+
+// คำนวณว่าชั่วโมงไหน (10-22) ถูกจองไปแล้วบ้าง จาก booked slots ที่ได้จาก server
+function computeOccupiedHours(bookedSlots) {
+  const occ = new Set();
+  for (let h = 10; h <= 22; h++) {
+    const cellStart = h * 60;
+    const cellEnd = (h + 1) * 60;
+    const overlap = bookedSlots.some(s => {
+      const sStart = timeStrToMinutes(s.start);
+      const sEnd = timeStrToMinutes(s.end);
+      return !(cellEnd <= sStart || cellStart >= sEnd);
+    });
+    if (overlap) occ.add(h);
+  }
+  return occ;
+}
+
+// วาดสถานะปุ่มใหม่ทั้งหมด (สีเทา = จองแล้ว, เขียว = เลือกอยู่)
+function renderSlotStates() {
+  document.querySelectorAll(".slot-btn").forEach(btn => {
+    const h = Number(btn.dataset.hour);
+    btn.classList.toggle("disabled", occupiedHours.has(h));
+    btn.classList.toggle("selected", h === selectedStartHour);
+  });
+}
+
+function onSlotClick(h, btn) {
+  if (occupiedHours.has(h)) return; // กดปุ่มสีเทาไม่ได้
+  selectedStartHour = h;
+  renderSlotStates();
+  populateDurationOptions();
+  document.getElementById("durationBox").classList.remove("hidden");
+  updateSummary();
+}
+
+// จำนวนชั่วโมงสูงสุดที่จองต่อเนื่องได้โดยไม่ชนคิวอื่นและไม่เกินเวลาปิด (23:00)
+function populateDurationOptions() {
+  const select = document.getElementById("duration");
+  select.innerHTML = "";
+  let maxDur = 0;
+  for (let h = selectedStartHour; h < Math.min(selectedStartHour + 4, 23); h++) {
+    if (occupiedHours.has(h)) break;
+    maxDur++;
+  }
+  for (let d = 1; d <= maxDur; d++) {
     const opt = document.createElement("option");
-    opt.value = label;
-    opt.textContent = label;
+    opt.value = d;
+    opt.textContent = d + " ชั่วโมง";
     select.appendChild(opt);
   }
 }
@@ -227,32 +305,27 @@ function selectBay(bay, el) {
   selectedBay = bay;
   document.querySelectorAll(".bay-btn").forEach(b => b.classList.remove("selected"));
   el.classList.add("selected");
-  loadBookedSlots();
-  updateSummary();
+  refreshAvailability();
 }
 
-// ---------- โหลดช่วงเวลาที่ถูกจองแล้ว ----------
-async function loadBookedSlots() {
-  const box = document.getElementById("bookedList");
-  if (!selectedBay) { box.textContent = ""; return; }
+// ---------- โหลดช่วงเวลาที่ถูกจองแล้ว แล้ววาดปุ่มใหม่ ----------
+async function refreshAvailability() {
+  // เลือก start hour เดิมทิ้งทุกครั้งที่เปลี่ยน Bay หรือวันที่ เพราะ slot อาจไม่ว่างแล้ว
+  selectedStartHour = null;
+  document.getElementById("durationBox").classList.add("hidden");
+
+  if (!selectedBay) { occupiedHours = new Set(); renderSlotStates(); return; }
   const date = document.getElementById("bookingDate").value;
   const res = await fetch(
     `${WEBAPP_URL}?action=getBookedSlots&bayId=${selectedBay.bay_id}&date=${date}`
   );
   const slots = await res.json();
-  if (Array.isArray(slots) && slots.length > 0) {
-    box.textContent = "ไม่ว่าง: " + slots.map(s => `${s.start}-${s.end}`).join(", ");
-  } else {
-    box.textContent = "วันนี้ยังว่างทุกช่วงเวลา ✅";
-    box.style.color = "#9fd8b8";
-  }
+  occupiedHours = Array.isArray(slots) ? computeOccupiedHours(slots) : new Set();
+  renderSlotStates();
+  updateSummary();
 }
 
-document.getElementById("bookingDate").addEventListener("change", () => {
-  loadBookedSlots();
-  updateSummary();
-});
-document.getElementById("startTime").addEventListener("change", updateSummary);
+document.getElementById("bookingDate").addEventListener("change", refreshAvailability);
 document.getElementById("duration").addEventListener("change", updateSummary);
 
 // ---------- Member checkbox ----------
@@ -275,13 +348,20 @@ function updateSummary() {
   if (!selectedBay) return;
   const isMember = document.getElementById("isMember").checked;
   const rate = isMember ? Number(selectedBay.price_member) : Number(selectedBay.price_regular);
-  const hours = Number(document.getElementById("duration").value);
-  const start = document.getElementById("startTime").value;
   const date = document.getElementById("bookingDate").value;
 
   document.getElementById("sumBay").textContent = selectedBay.bay_name;
-  document.getElementById("sumTime").textContent = `${date} เวลา ${start} (${hours} ชม.)`;
   document.getElementById("sumRate").textContent = `${rate} บาท/ชม.`;
+
+  if (selectedStartHour === null) {
+    document.getElementById("sumTime").textContent = "กรุณาเลือกเวลาเริ่ม";
+    document.getElementById("sumTotal").textContent = `รวม 0 บาท`;
+    return;
+  }
+  const durSelect = document.getElementById("duration");
+  const hours = Number(durSelect.value || 0);
+  const startLabel = String(selectedStartHour).padStart(2, "0") + ":00";
+  document.getElementById("sumTime").textContent = `${date} เวลา ${startLabel} (${hours} ชม.)`;
   document.getElementById("sumTotal").textContent = `รวม ${rate * hours} บาท`;
 }
 
@@ -292,18 +372,19 @@ document.getElementById("submitBtn").onclick = async () => {
   const isMember = document.getElementById("isMember").checked;
   const memberId = document.getElementById("memberId").value.trim();
   const date = document.getElementById("bookingDate").value;
-  const startTime = document.getElementById("startTime").value;
-  const hours = Number(document.getElementById("duration").value);
-  const endHour = (Number(startTime.split(":")[0]) + hours).toString().padStart(2, "0");
-  const endTime = endHour + ":00";
 
   const resultBox = document.getElementById("resultMsg");
   resultBox.innerHTML = "";
 
   if (!selectedBay) return showMsg("กรุณาเลือก Bay ก่อนครับ", "error");
+  if (selectedStartHour === null) return showMsg("กรุณาเลือกเวลาเริ่มก่อนครับ", "error");
   if (!name || !phone) return showMsg("กรุณากรอกชื่อและเบอร์โทรศัพท์", "error");
   if (isMember && !memberId) return showMsg("กรุณากรอกเลขสมาชิก", "error");
   if (!selectedPayment) return showMsg("กรุณาเลือกวิธีชำระเงิน", "error");
+
+  const hours = Number(document.getElementById("duration").value);
+  const startTime = String(selectedStartHour).padStart(2, "0") + ":00";
+  const endTime = String(selectedStartHour + hours).padStart(2, "0") + ":00";
 
   document.getElementById("submitBtn").disabled = true;
   document.getElementById("submitBtn").textContent = "กำลังบันทึก...";
@@ -331,6 +412,7 @@ document.getElementById("submitBtn").onclick = async () => {
         `✅ จองสำเร็จ! เลขที่จอง ${result.bookingId} — ${result.bayName} รวม ${result.totalPrice} บาท`,
         "success"
       );
+      await refreshAvailability(); // อัพเดทกริดเวลาให้ช่องที่เพิ่งจองเป็นสีเทาทันที
     } else {
       showMsg("❌ " + result.message, "error");
     }
