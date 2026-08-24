@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>สมัคร Member - Golf Simulator</title>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -66,6 +67,47 @@
   .msg { padding: 12px; border-radius: 10px; margin-top: 12px; font-size: 14px; }
   .msg.error { background: #4a1c1c; color: #ffb4b4; }
   .msg.success { background: #1c4a2e; color: #baffd6; font-size: 15px; line-height: 1.6; }
+  .hidden { display: none; }
+
+  .receipt {
+    background: #163a26;
+    border-radius: 16px;
+    padding: 20px;
+    border: 2px dashed #4ade80;
+  }
+  .receipt-header { text-align: center; margin-bottom: 16px; }
+  .receipt-header .check { font-size: 40px; }
+  .receipt-header h2 { margin: 6px 0 2px; font-size: 18px; color: #4ade80; }
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #1f4a30;
+    font-size: 14px;
+  }
+  .receipt-row span:first-child { color: #9fd8b8; }
+  .qr-box { text-align: center; margin-top: 18px; padding: 16px; background: #fff; border-radius: 12px; }
+  .qr-hint { text-align: center; font-size: 13px; color: #9fd8b8; margin-top: 8px; }
+  .pending-hint {
+    text-align: center;
+    font-size: 14px;
+    color: #ffe9a8;
+    background: #4a3c1c;
+    padding: 14px;
+    border-radius: 10px;
+    margin-top: 16px;
+    line-height: 1.6;
+  }
+  .cash-hint {
+    text-align: center;
+    font-size: 14px;
+    color: #ffe9a8;
+    background: #4a3c1c;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 16px;
+  }
+  .screenshot-hint { text-align: center; font-size: 12px; color: #6b8a76; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -73,6 +115,7 @@
 <h1>⭐ สมัคร / ต่ออายุ Member</h1>
 <div class="sub">รับสิทธิ์ราคาพิเศษทุก Bay ตลอดปี</div>
 
+<div id="formContainer">
 <div class="card">
   <div class="price-box">
     <div class="amount">3,000 บาท</div>
@@ -106,6 +149,41 @@
 
 <button class="submit" id="submitBtn">สมัคร / ต่ออายุ Member</button>
 <div id="resultMsg"></div>
+</div><!-- /formContainer -->
+
+<!-- ================= หน้าใบเสร็จ ================= -->
+<div class="receipt hidden" id="receiptScreen">
+  <div class="receipt-header">
+    <div class="check">✅</div>
+    <h2 id="rcTitle">สมัครสำเร็จ!</h2>
+  </div>
+
+  <div class="receipt-row"><span>ชื่อ</span><span id="rcName">-</span></div>
+  <div class="receipt-row"><span>ยอดชำระ</span><span>3,000 บาท</span></div>
+  <div class="receipt-row"><span>วิธีชำระเงิน</span><span id="rcPayment">-</span></div>
+
+  <!-- กรณีจ่ายเงินสด: รอพนักงาน activate เหมือนกัน ไม่โชว์เลขสมาชิกทันที -->
+  <div id="cashResult" class="hidden">
+    <div class="pending-hint">
+      💵 กรุณาชำระเงินสดที่หน้าร้าน<br/><br/>
+      📸 <b>เก็บภาพหน้าจอนี้ไว้</b> แล้วแจ้งพนักงานหน้าร้านเพื่อยืนยันการชำระเงินและเปิดใช้งานสมาชิกภาพ<br/><br/>
+      เมื่อพนักงานยืนยันแล้ว ระบบจะส่งเลขสมาชิกของคุณกลับมาทาง LINE ทันที
+    </div>
+  </div>
+
+  <!-- กรณีจ่าย QR: ยังไม่โชว์เลขสมาชิก รอพนักงานตรวจสอบก่อน -->
+  <div id="qrResult" class="hidden">
+    <div class="qr-box"><div id="qrCodeCanvas"></div></div>
+    <div class="qr-hint">สแกนจ่ายผ่านแอปธนาคารของคุณ (PromptPay)<br/>ยอด 3,000 บาท</div>
+    <div class="pending-hint">
+      📌 เมื่อชำระเงินเรียบร้อยแล้ว กรุณาแจ้งพนักงานทางแชท หรือแจ้งตรงเคาน์เตอร์หน้าร้าน<br/>
+      พร้อมส่งสลิปเพื่อให้พนักงานตรวจสอบยอด<br/><br/>
+      ⏳ เมื่อตรวจสอบเรียบร้อยแล้ว ระบบจะ<b>ส่งเลขสมาชิกของคุณกลับมาทาง LINE ทันที</b>
+    </div>
+  </div>
+
+  <div class="screenshot-hint">📸 แคปหน้าจอนี้เก็บไว้เป็นหลักฐานได้เลยครับ</div>
+</div>
 
 <script>
 // ⚠️ Web App URL เดียวกับหน้าจอง (ใช้ backend ตัวเดียวกัน)
@@ -113,6 +191,52 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz4tmq9UXnu_TApw3YSr
 
 // ⚠️ ใส่ LIFF ID ของหน้านี้ (คนละอันกับหน้าจอง ต้องสร้าง LIFF app ใหม่แยกต่างหาก)
 const LIFF_ID = "2011162670-KArBec0z";
+
+// ⚠️ เลขเติมเงินพร้อมเพย์ของร้าน (eWallet ID 15 หลัก อันเดียวกับหน้าจอง)
+const PROMPTPAY_ID = "004999103922430";
+
+function crc16ccitt(str) {
+  let crc = 0xffff;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+      crc &= 0xffff;
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, "0");
+}
+function ppField(id, value) {
+  const len = String(value.length).padStart(2, "0");
+  return `${id}${len}${value}`;
+}
+function generatePromptPayPayload(idRaw, amount) {
+  const id = String(idRaw).replace(/[^0-9]/g, "");
+  let target, typeId;
+  if (id.length === 13) {
+    target = id;
+    typeId = "02";
+  } else if (id.length === 10) {
+    target = ("0066" + id.substring(1)).padStart(13, "0");
+    typeId = "01";
+  } else if (id.length === 15) {
+    target = id;
+    typeId = "03";
+  } else {
+    target = id.padStart(13, "0");
+    typeId = "02";
+  }
+  const merchantInfo = ppField("00", "A000000677010111") + ppField(typeId, target);
+  let payload = "";
+  payload += ppField("00", "01");
+  payload += ppField("01", "12");
+  payload += ppField("29", merchantInfo);
+  payload += ppField("53", "764");
+  payload += ppField("54", Number(amount).toFixed(2));
+  payload += ppField("58", "TH");
+  payload += "6304";
+  return payload + crc16ccitt(payload);
+}
 
 let selectedPayment = null;
 let lineUserId = "guest-test-user";
@@ -166,12 +290,7 @@ document.getElementById("submitBtn").onclick = async () => {
     const result = await res.json();
 
     if (result.success) {
-      const verb = result.renewed ? "ต่ออายุสำเร็จ" : "สมัครสำเร็จ";
-      showMsg(
-        `✅ ${verb}!<br/>เลขสมาชิกของคุณ: <b>${result.memberId}</b><br/>หมดอายุ: ${result.expiryDate}<br/><br/>` +
-        `กรุณาชำระเงิน ${selectedPayment === "QR" ? "ผ่าน QR Code" : "ที่หน้าร้าน"} และจำเลขสมาชิกไว้ใช้ตอนจองครั้งถัดไป`,
-        "success"
-      );
+      showReceipt(result, name);
     } else {
       showMsg("❌ " + result.message, "error");
     }
@@ -182,6 +301,30 @@ document.getElementById("submitBtn").onclick = async () => {
   document.getElementById("submitBtn").disabled = false;
   document.getElementById("submitBtn").textContent = "สมัคร / ต่ออายุ Member";
 };
+
+// ---------- แสดงหน้าใบเสร็จ ----------
+function showReceipt(result, name) {
+  document.getElementById("formContainer").classList.add("hidden");
+  document.getElementById("receiptScreen").classList.remove("hidden");
+
+  document.getElementById("rcTitle").textContent = result.renewed ? "ต่ออายุสำเร็จ!" : "สมัครสำเร็จ!";
+  document.getElementById("rcName").textContent = name;
+  document.getElementById("rcPayment").textContent = selectedPayment === "QR" ? "QR Code Payment" : "Cash / ชำระที่หน้าร้าน";
+
+  if (selectedPayment === "CASH") {
+    // จ่ายเงินสด -> ยังไม่โชว์เลขสมาชิก ต้องให้พนักงานยืนยันก่อนเหมือนกับ QR
+    document.getElementById("cashResult").classList.remove("hidden");
+    document.getElementById("qrResult").classList.add("hidden");
+  } else {
+    // จ่าย QR -> ยังไม่โชว์เลขสมาชิก รอพนักงานยืนยันเงินเข้าก่อน ระบบจะส่งเลขให้ทาง LINE ทีหลัง
+    document.getElementById("qrResult").classList.remove("hidden");
+    document.getElementById("cashResult").classList.add("hidden");
+    const qrContainer = document.getElementById("qrCodeCanvas");
+    qrContainer.innerHTML = "";
+    const payload = generatePromptPayPayload(PROMPTPAY_ID, 3000);
+    new QRCode(qrContainer, { text: payload, width: 220, height: 220 });
+  }
+}
 
 function showMsg(text, type) {
   document.getElementById("resultMsg").innerHTML = `<div class="msg ${type}">${text}</div>`;
