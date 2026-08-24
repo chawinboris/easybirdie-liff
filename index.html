@@ -3,162 +3,244 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>จอง Bay - Golf Simulator</title>
+<title>EasyBirdie Club — จองใช้งาน Bay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
+  :root {
+    --bg: #0a1410;
+    --panel: #10201a;
+    --panel-border: #23392c;
+    --gold: #c9a24b;
+    --gold-light: #e6cd8f;
+    --ivory: #f2ede1;
+    --muted: #8ea08e;
+    --danger: #b3564a;
+    --danger-bg: #351d1b;
+    --confirm-bg: #16261e;
+  }
   * { box-sizing: border-box; }
   body {
-    font-family: -apple-system, "Segoe UI", "Sarabun", sans-serif;
-    background: #0f2418;
-    color: #fff;
+    font-family: 'Jost', sans-serif;
+    background: var(--bg);
+    background-image: radial-gradient(circle at 50% -10%, rgba(201,162,75,0.10), transparent 55%);
+    color: var(--ivory);
     margin: 0;
-    padding: 16px;
+    padding: 20px 16px 40px;
   }
-  h1 { font-size: 20px; margin-bottom: 4px; }
-  .sub { color: #9fd8b8; font-size: 13px; margin-bottom: 20px; }
+  /* ---------- หัวเรื่องหรูหรา ---------- */
+  .brand-header { text-align: center; margin-bottom: 26px; }
+  .brand-eyebrow {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px;
+    letter-spacing: 5px;
+    color: var(--gold);
+    text-transform: uppercase;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .brand-eyebrow::before, .brand-eyebrow::after {
+    content: ""; height: 1px; width: 28px;
+    background: linear-gradient(to var(--dir,right), transparent, var(--gold));
+  }
+  .brand-eyebrow::after { --dir: left; }
+  h1.brand-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-style: italic;
+    font-size: 28px;
+    margin: 8px 0 4px;
+    color: var(--ivory);
+    letter-spacing: 0.3px;
+  }
+  h1.brand-title .accent { color: var(--gold-light); font-style: normal; }
+  .brand-sub {
+    color: var(--muted);
+    font-size: 12.5px;
+    letter-spacing: 0.5px;
+  }
+
   .card {
-    background: #163a26;
-    border-radius: 14px;
-    padding: 16px;
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 18px;
     margin-bottom: 14px;
   }
-  label { display: block; font-size: 14px; margin: 10px 0 6px; color: #cdeedd; }
+  label {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 10px 0 8px;
+    color: var(--muted);
+  }
   select, input[type=date], input[type=text], input[type=tel] {
     width: 100%;
     padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #2c5c40;
-    background: #0f2418;
-    color: #fff;
+    border-radius: 6px;
+    border: 1px solid var(--panel-border);
+    background: var(--bg);
+    color: var(--ivory);
+    font-family: 'Jost', sans-serif;
     font-size: 15px;
   }
+  input:focus, select:focus { outline: none; border-color: var(--gold); }
+  .field-error { font-size: 12px; color: var(--danger); margin-top: 4px; display: none; }
+
   .bay-btn {
     display: block;
     width: 100%;
-    padding: 14px;
+    padding: 14px 16px;
     margin-bottom: 10px;
-    border-radius: 12px;
-    border: 2px solid #2c5c40;
-    background: #0f2418;
-    color: #fff;
+    border-radius: 8px;
+    border: 1px solid var(--panel-border);
+    background: var(--bg);
+    color: var(--ivory);
+    font-family: 'Jost', sans-serif;
     font-size: 15px;
+    font-weight: 500;
     text-align: left;
     cursor: pointer;
   }
-  .bay-btn.selected { border-color: #4ade80; background: #1c4a2e; }
-  .bay-btn .price { color: #9fd8b8; font-size: 13px; margin-top: 4px; }
+  .bay-btn.selected { border-color: var(--gold); background: linear-gradient(180deg, rgba(201,162,75,0.14), rgba(201,162,75,0.04)); }
+  .bay-btn .price { color: var(--muted); font-size: 12.5px; margin-top: 5px; letter-spacing: 0.2px; }
+
   .row { display: flex; gap: 10px; }
   .row > div { flex: 1; }
-  .slot-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-top: 6px;
-  }
+  .slot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 6px; }
   .slot-btn {
     padding: 10px 4px;
-    border-radius: 8px;
-    border: 2px solid #2c5c40;
-    background: #0f2418;
-    color: #fff;
+    border-radius: 6px;
+    border: 1px solid var(--panel-border);
+    background: var(--bg);
+    color: var(--ivory);
+    font-family: 'Jost', sans-serif;
     font-size: 13px;
     text-align: center;
     cursor: pointer;
   }
-  .slot-btn.selected { border-color: #4ade80; background: #1c4a2e; }
+  .slot-btn.selected { border-color: var(--gold); background: rgba(201,162,75,0.16); color: var(--gold-light); }
   .slot-btn.disabled {
-    background: #1a2620;
-    color: #5c7d6c;
-    border-color: #24382c;
+    background: #0d1713;
+    color: #4b5c50;
+    border-color: #1a2b21;
     cursor: not-allowed;
     text-decoration: line-through;
   }
-  .slot-hint { font-size: 12px; color: #9fd8b8; margin-top: 6px; }
-  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
-  .checkbox-row input { width: 18px; height: 18px; }
+  .slot-hint { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+  .checkbox-row input { width: 17px; height: 17px; accent-color: var(--gold); }
+  .checkbox-row label { margin: 0; text-transform: none; letter-spacing: 0; font-size: 14px; color: var(--ivory); }
+
   .pay-option {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 12px;
-    border: 2px solid #2c5c40;
-    border-radius: 10px;
+    padding: 13px;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
     margin-bottom: 8px;
     cursor: pointer;
+    font-size: 14.5px;
   }
-  .pay-option.selected { border-color: #4ade80; background: #1c4a2e; }
-  .summary-line { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
-  .summary-total { font-size: 20px; font-weight: bold; color: #4ade80; text-align: right; margin-top: 8px; }
+  .pay-option.selected { border-color: var(--gold); background: rgba(201,162,75,0.10); }
+
+  .summary-line { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; color: var(--muted); }
+  .summary-line span:last-child { color: var(--ivory); }
+  .summary-total {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--gold-light);
+    text-align: right;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--panel-border);
+  }
+
   button.submit {
     width: 100%;
     padding: 16px;
-    border-radius: 12px;
-    border: none;
-    background: #4ade80;
-    color: #0f2418;
-    font-size: 16px;
-    font-weight: bold;
+    border-radius: 8px;
+    border: 1px solid var(--gold);
+    background: linear-gradient(180deg, var(--gold-light), var(--gold));
+    color: #1a1408;
+    font-family: 'Jost', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
     cursor: pointer;
     margin-top: 10px;
   }
-  button.submit:disabled { background: #375; color: #9fd8b8; }
-  .msg { padding: 12px; border-radius: 10px; margin-top: 12px; font-size: 14px; }
-  .msg.error { background: #4a1c1c; color: #ffb4b4; }
-  .msg.success { background: #1c4a2e; color: #baffd6; }
+  button.submit:disabled { background: #3a4038; border-color: #3a4038; color: #8a9088; }
+  .msg { padding: 12px 14px; border-radius: 8px; margin-top: 12px; font-size: 13.5px; }
+  .msg.error { background: var(--danger-bg); color: #ffb4a8; border: 1px solid #5c2b26; }
+  .msg.success { background: var(--confirm-bg); color: var(--gold-light); }
   .hidden { display: none; }
 
-  /* ---------- หน้าใบเสร็จ ---------- */
+  /* ---------- หน้าใบเสร็จ (ตั๋วสมาชิก) ---------- */
   .receipt {
-    background: #163a26;
-    border-radius: 16px;
-    padding: 20px;
-    border: 2px dashed #4ade80;
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 22px;
+    border: 1px solid var(--panel-border);
+    position: relative;
   }
-  .receipt-header { text-align: center; margin-bottom: 16px; }
-  .receipt-header .check { font-size: 40px; }
-  .receipt-header h2 { margin: 6px 0 2px; font-size: 18px; color: #4ade80; }
-  .receipt-header .bkid { font-size: 13px; color: #9fd8b8; letter-spacing: 1px; }
+  .receipt::before {
+    content: "";
+    position: absolute; inset: 8px;
+    border: 1px dashed rgba(201,162,75,0.4);
+    border-radius: 8px;
+    pointer-events: none;
+  }
+  .receipt-header { text-align: center; margin-bottom: 18px; }
+  .receipt-header .check { font-size: 34px; color: var(--gold-light); }
+  .receipt-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    margin: 8px 0 2px; font-size: 22px; color: var(--gold-light);
+  }
+  .receipt-header .bkid { font-size: 12px; color: var(--muted); letter-spacing: 2px; }
   .receipt-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #1f4a30;
-    font-size: 14px;
+    display: flex; justify-content: space-between;
+    padding: 9px 0; border-bottom: 1px solid var(--panel-border);
+    font-size: 13.5px;
   }
-  .receipt-row span:first-child { color: #9fd8b8; }
-  .receipt-row.total { font-size: 18px; font-weight: bold; color: #4ade80; border-bottom: none; padding-top: 12px; }
-  .qr-box { text-align: center; margin-top: 18px; padding: 16px; background: #fff; border-radius: 12px; }
+  .receipt-row span:first-child { color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-size: 11.5px; }
+  .receipt-row.total {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; font-weight: 600; color: var(--gold-light);
+    border-bottom: none; padding-top: 14px;
+  }
+  .qr-box { text-align: center; margin-top: 18px; padding: 16px; background: #fff; border-radius: 10px; }
   .qr-box img, .qr-box canvas { margin: 0 auto; }
-  .qr-hint { text-align: center; font-size: 13px; color: #9fd8b8; margin-top: 8px; }
+  .qr-hint { text-align: center; font-size: 12.5px; color: var(--muted); margin-top: 10px; line-height: 1.7; }
   .cash-hint {
-    text-align: center;
-    font-size: 14px;
-    color: #ffe9a8;
-    background: #4a3c1c;
-    padding: 12px;
-    border-radius: 10px;
-    margin-top: 16px;
+    text-align: center; font-size: 13.5px; color: var(--gold-light);
+    background: rgba(201,162,75,0.10); border: 1px solid rgba(201,162,75,0.3);
+    padding: 12px; border-radius: 8px; margin-top: 16px;
   }
   .newbooking-btn {
-    width: 100%;
-    padding: 14px;
-    border-radius: 12px;
-    border: 2px solid #4ade80;
-    background: transparent;
-    color: #4ade80;
-    font-size: 15px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-top: 16px;
+    width: 100%; padding: 14px; border-radius: 8px;
+    border: 1px solid var(--gold); background: transparent; color: var(--gold-light);
+    font-family: 'Jost', sans-serif; font-size: 13px; letter-spacing: 1px; text-transform: uppercase;
+    cursor: pointer; margin-top: 18px;
   }
-  .screenshot-hint { text-align: center; font-size: 12px; color: #6b8a76; margin-top: 10px; }
+  .screenshot-hint { text-align: center; font-size: 11.5px; color: var(--muted); margin-top: 12px; }
 </style>
 </head>
 <body>
 
-<h1>⛳ จองใช้งาน Bay</h1>
-<div class="sub">เลือก Bay ที่ต้องการ แล้วกรอกรายละเอียดการจอง</div>
+<div class="brand-header">
+  <div class="brand-eyebrow">EasyBirdie Club</div>
+  <h1 class="brand-title">จองใช้งาน Bay เลยที่ <span class="accent">EasyBirdie Club</span></h1>
+  <div class="brand-sub">เลือก Bay ที่ต้องการ แล้วกรอกรายละเอียดการจอง</div>
+</div>
 
 <div id="formContainer">
 <!-- ================= STEP A: เลือก Bay ================= -->
@@ -174,7 +256,7 @@
 
   <label>เลือกเวลาเริ่ม</label>
   <div class="slot-grid" id="slotGrid">กำลังโหลด...</div>
-  <div class="slot-hint">⬜ ว่าง &nbsp; &nbsp; ▨ สีเทา = ไม่ว่างแล้ว กดเลือกไม่ได้</div>
+  <div class="slot-hint">ช่องสีจาง (ขีดทับ) หมายถึงไม่ว่างแล้ว กดเลือกไม่ได้</div>
 
   <div id="durationBox" class="hidden">
     <label>จำนวนชั่วโมง</label>
@@ -188,11 +270,12 @@
   <input type="text" id="customerName" placeholder="ชื่อลูกค้า" />
 
   <label>เบอร์โทรศัพท์</label>
-  <input type="tel" id="phone" placeholder="08xxxxxxxx" />
+  <input type="tel" id="phone" placeholder="0812345678" maxlength="10" inputmode="numeric" />
+  <div class="field-error" id="phoneError">กรุณากรอกเบอร์โทร 10 หลัก ขึ้นต้นด้วย 0 (เช่น 0812345678)</div>
 
   <div class="checkbox-row">
     <input type="checkbox" id="isMember" />
-    <label style="margin:0;">ฉันเป็น Member / นักเรียนคอร์ส</label>
+    <label>ฉันเป็น Member / นักเรียนคอร์ส</label>
   </div>
 
   <div id="memberIdBox" class="hidden">
@@ -227,8 +310,8 @@
 <!-- ================= หน้าใบเสร็จ (โผล่หลังจองสำเร็จ) ================= -->
 <div class="receipt hidden" id="receiptScreen">
   <div class="receipt-header">
-    <div class="check">✅</div>
-    <h2>จองสำเร็จ!</h2>
+    <div class="check">✓</div>
+    <h2>จองสำเร็จ</h2>
     <div class="bkid" id="rcBookingId">-</div>
   </div>
 
@@ -239,30 +322,28 @@
   <div class="receipt-row"><span>วิธีชำระเงิน</span><span id="rcPayment">-</span></div>
   <div class="receipt-row total"><span>ยอดชำระ</span><span id="rcTotal">0 บาท</span></div>
 
-  <!-- โชว์เฉพาะตอนเลือกจ่ายด้วย QR -->
   <div id="qrSection" class="hidden">
     <div class="qr-box"><div id="qrCodeCanvas"></div></div>
     <div class="qr-hint">
       สแกนจ่ายผ่านแอปธนาคารของคุณ (PromptPay)<br/>ยอด <span id="qrAmount">0</span> บาท<br/><br/>
-      📌 เมื่อชำระเงินเรียบร้อยแล้ว กรุณาส่งสลิปให้ทางแชทพร้อมแจ้ง Booking ID<br/>
+      เมื่อชำระเงินเรียบร้อยแล้ว กรุณาส่งสลิปให้ทางแชทพร้อมแจ้ง Booking ID<br/>
       หรือโชว์สลิปพร้อมแจ้ง Booking ID กับพนักงานหน้าร้าน
     </div>
   </div>
 
-  <!-- โชว์เฉพาะตอนเลือกจ่ายเงินสด -->
   <div id="cashSection" class="hidden">
-    <div class="cash-hint">💵 กรุณาชำระเงินที่เคาน์เตอร์ ก่อนถึงเวลาใช้งานอย่างน้อย 10 นาที</div>
+    <div class="cash-hint">กรุณาชำระเงินที่เคาน์เตอร์ ก่อนถึงเวลาใช้งานอย่างน้อย 10 นาที</div>
   </div>
 
-  <div class="screenshot-hint">📸 แคปหน้าจอนี้เก็บไว้เป็นหลักฐานการจองได้เลยครับ</div>
+  <div class="screenshot-hint">แคปหน้าจอนี้เก็บไว้เป็นหลักฐานการจองได้เลยครับ</div>
   <button class="newbooking-btn" id="newBookingBtn">+ จองครั้งใหม่</button>
 </div>
 
 <script>
-// ⚠️ ใส่ Web App URL ของคุณตรงนี้ (ได้จาก Step 2)
+// ⚠️ ใส่ Web App URL ของคุณตรงนี้
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz4tmq9UXnu_TApw3YSrlRCq9Cxy152DmW47B5GGRKxrDOf2NksPkfL2EvkDbodH9_8lw/exec";
 
-// ⚠️ ใส่ LIFF ID ตรงนี้ (จะได้ใน Step 4 - ตอนนี้ใส่ค่าว่างไว้ก่อนได้)
+// ⚠️ ใส่ LIFF ID ตรงนี้
 const LIFF_ID = "2011162670-ZWvLULTQ";
 
 // ⚠️ เลขเติมเงินพร้อมเพย์ของร้าน (eWallet ID 15 หลัก)
@@ -288,27 +369,20 @@ function generatePromptPayPayload(idRaw, amount) {
   const id = String(idRaw).replace(/[^0-9]/g, "");
   let target, typeId;
   if (id.length === 13) {
-    // เลขบัตรประชาชน / เลขผู้เสียภาษี
-    target = id;
-    typeId = "02";
+    target = id; typeId = "02";
   } else if (id.length === 10) {
-    // เบอร์โทรศัพท์ -> แปลงเป็นฟอร์แมต 0066XXXXXXXXX (13 หลัก)
-    target = ("0066" + id.substring(1)).padStart(13, "0");
-    typeId = "01";
+    target = ("0066" + id.substring(1)).padStart(13, "0"); typeId = "01";
   } else if (id.length === 15) {
-    // eWallet ID (ใช้ตรงๆ ไม่ต้องแปลง)
-    target = id;
-    typeId = "03";
+    target = id; typeId = "03";
   } else {
-    target = id.padStart(13, "0");
-    typeId = "02";
+    target = id.padStart(13, "0"); typeId = "02";
   }
   const merchantInfo = ppField("00", "A000000677010111") + ppField(typeId, target);
   let payload = "";
   payload += ppField("00", "01");
-  payload += ppField("01", "12"); // dynamic QR (มีจำนวนเงินระบุ)
+  payload += ppField("01", "12");
   payload += ppField("29", merchantInfo);
-  payload += ppField("53", "764"); // THB
+  payload += ppField("53", "764");
   payload += ppField("54", Number(amount).toFixed(2));
   payload += ppField("58", "TH");
   payload += "6304";
@@ -318,10 +392,9 @@ function generatePromptPayPayload(idRaw, amount) {
 let bays = [];
 let selectedBay = null;
 let selectedPayment = null;
-let lineUserId = "guest-test-user"; // ค่า default ตอนทดสอบนอก LINE
+let lineUserId = "guest-test-user";
 let lineDisplayName = "";
 
-// ---------- INIT ----------
 window.onload = async () => {
   try {
     if (LIFF_ID !== "YOUR_LIFF_ID_HERE") {
@@ -345,7 +418,6 @@ window.onload = async () => {
   await refreshAvailability();
 };
 
-// ---------- สร้างปุ่มเวลาเริ่ม 10:00 - 22:00 ----------
 let selectedStartHour = null;
 let occupiedHours = new Set();
 
@@ -367,7 +439,6 @@ function timeStrToMinutes(t) {
   return h * 60 + m;
 }
 
-// คำนวณว่าชั่วโมงไหน (10-22) ถูกจองไปแล้วบ้าง จาก booked slots ที่ได้จาก server
 function computeOccupiedHours(bookedSlots) {
   const occ = new Set();
   for (let h = 10; h <= 22; h++) {
@@ -383,7 +454,6 @@ function computeOccupiedHours(bookedSlots) {
   return occ;
 }
 
-// วาดสถานะปุ่มใหม่ทั้งหมด (สีเทา = จองแล้ว, เขียว = เลือกอยู่)
 function renderSlotStates() {
   document.querySelectorAll(".slot-btn").forEach(btn => {
     const h = Number(btn.dataset.hour);
@@ -393,7 +463,7 @@ function renderSlotStates() {
 }
 
 function onSlotClick(h, btn) {
-  if (occupiedHours.has(h)) return; // กดปุ่มสีเทาไม่ได้
+  if (occupiedHours.has(h)) return;
   selectedStartHour = h;
   renderSlotStates();
   populateDurationOptions();
@@ -401,7 +471,6 @@ function onSlotClick(h, btn) {
   updateSummary();
 }
 
-// จำนวนชั่วโมงสูงสุดที่จองต่อเนื่องได้โดยไม่ชนคิวอื่นและไม่เกินเวลาปิด (23:00)
 function populateDurationOptions() {
   const select = document.getElementById("duration");
   select.innerHTML = "";
@@ -418,7 +487,6 @@ function populateDurationOptions() {
   }
 }
 
-// ---------- โหลดรายชื่อ Bay ----------
 async function loadBays() {
   const res = await fetch(WEBAPP_URL + "?action=getBays");
   bays = await res.json();
@@ -441,9 +509,7 @@ function selectBay(bay, el) {
   refreshAvailability();
 }
 
-// ---------- โหลดช่วงเวลาที่ถูกจองแล้ว แล้ววาดปุ่มใหม่ ----------
 async function refreshAvailability() {
-  // เลือก start hour เดิมทิ้งทุกครั้งที่เปลี่ยน Bay หรือวันที่ เพราะ slot อาจไม่ว่างแล้ว
   selectedStartHour = null;
   document.getElementById("durationBox").classList.add("hidden");
 
@@ -461,13 +527,11 @@ async function refreshAvailability() {
 document.getElementById("bookingDate").addEventListener("change", refreshAvailability);
 document.getElementById("duration").addEventListener("change", updateSummary);
 
-// ---------- Member checkbox ----------
 document.getElementById("isMember").addEventListener("change", e => {
   document.getElementById("memberIdBox").classList.toggle("hidden", !e.target.checked);
   updateSummary();
 });
 
-// ---------- วิธีชำระเงิน ----------
 document.getElementById("payQR").onclick = () => selectPayment("QR");
 document.getElementById("payCash").onclick = () => selectPayment("CASH");
 function selectPayment(val) {
@@ -476,7 +540,6 @@ function selectPayment(val) {
   document.getElementById("payCash").classList.toggle("selected", val === "CASH");
 }
 
-// ---------- อัพเดทสรุปราคา (ราคาโดยประมาณ ราคาจริงยืนยันตอนบันทึก) ----------
 function updateSummary() {
   if (!selectedBay) return;
   const isMember = document.getElementById("isMember").checked;
@@ -498,7 +561,14 @@ function updateSummary() {
   document.getElementById("sumTotal").textContent = `รวม ${rate * hours} บาท`;
 }
 
-// ---------- ยืนยันการจอง ----------
+// ---------- เช็คฟอร์แมตเบอร์โทร (10 หลัก ขึ้นต้นด้วย 0) ----------
+function isValidThaiPhone(phone) {
+  return /^0[0-9]{9}$/.test(phone);
+}
+document.getElementById("phone").addEventListener("input", e => {
+  e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+});
+
 document.getElementById("submitBtn").onclick = async () => {
   const name = document.getElementById("customerName").value.trim();
   const phone = document.getElementById("phone").value.trim();
@@ -508,10 +578,15 @@ document.getElementById("submitBtn").onclick = async () => {
 
   const resultBox = document.getElementById("resultMsg");
   resultBox.innerHTML = "";
+  document.getElementById("phoneError").style.display = "none";
 
   if (!selectedBay) return showMsg("กรุณาเลือก Bay ก่อนครับ", "error");
   if (selectedStartHour === null) return showMsg("กรุณาเลือกเวลาเริ่มก่อนครับ", "error");
-  if (!name || !phone) return showMsg("กรุณากรอกชื่อและเบอร์โทรศัพท์", "error");
+  if (!name) return showMsg("กรุณากรอกชื่อ-นามสกุล", "error");
+  if (!isValidThaiPhone(phone)) {
+    document.getElementById("phoneError").style.display = "block";
+    return showMsg("กรุณากรอกเบอร์โทรให้ถูกต้อง (10 หลัก ขึ้นต้นด้วย 0)", "error");
+  }
   if (isMember && !memberId) return showMsg("กรุณากรอกเลขสมาชิก", "error");
   if (!selectedPayment) return showMsg("กรุณาเลือกวิธีชำระเงิน", "error");
 
@@ -535,7 +610,7 @@ document.getElementById("submitBtn").onclick = async () => {
   try {
     const res = await fetch(WEBAPP_URL, {
       method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" }, // กัน CORS preflight ปัญหา
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     });
     const result = await res.json();
@@ -553,13 +628,12 @@ document.getElementById("submitBtn").onclick = async () => {
   document.getElementById("submitBtn").textContent = "ยืนยันการจอง";
 };
 
-// ---------- แสดงหน้าใบเสร็จหลังจองสำเร็จ ----------
 function showReceipt(result) {
   document.getElementById("formContainer").classList.add("hidden");
   const receipt = document.getElementById("receiptScreen");
   receipt.classList.remove("hidden");
 
-  document.getElementById("rcBookingId").textContent = "เลขที่จอง: " + result.bookingId;
+  document.getElementById("rcBookingId").textContent = "เลขที่จอง " + result.bookingId;
   document.getElementById("rcName").textContent = result.customerName;
   document.getElementById("rcBay").textContent = result.bayName;
   document.getElementById("rcDate").textContent = result.bookingDate;
@@ -572,7 +646,7 @@ function showReceipt(result) {
     document.getElementById("cashSection").classList.add("hidden");
     document.getElementById("qrAmount").textContent = result.totalPrice;
     const qrContainer = document.getElementById("qrCodeCanvas");
-    qrContainer.innerHTML = ""; // เคลียร์ QR เก่าถ้ามี
+    qrContainer.innerHTML = "";
     const payload = generatePromptPayPayload(PROMPTPAY_ID, result.totalPrice);
     new QRCode(qrContainer, { text: payload, width: 220, height: 220 });
   } else {
@@ -585,7 +659,6 @@ document.getElementById("newBookingBtn").onclick = () => {
   document.getElementById("receiptScreen").classList.add("hidden");
   document.getElementById("formContainer").classList.remove("hidden");
   document.getElementById("resultMsg").innerHTML = "";
-  // รีเซ็ตฟอร์มบางส่วน
   document.querySelectorAll(".bay-btn").forEach(b => b.classList.remove("selected"));
   selectedBay = null;
   selectedPayment = null;
