@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>จอง Bay - Golf Simulator</title>
 <script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   * { box-sizing: border-box; }
   body {
@@ -106,6 +107,52 @@
   .msg.error { background: #4a1c1c; color: #ffb4b4; }
   .msg.success { background: #1c4a2e; color: #baffd6; }
   .hidden { display: none; }
+
+  /* ---------- หน้าใบเสร็จ ---------- */
+  .receipt {
+    background: #163a26;
+    border-radius: 16px;
+    padding: 20px;
+    border: 2px dashed #4ade80;
+  }
+  .receipt-header { text-align: center; margin-bottom: 16px; }
+  .receipt-header .check { font-size: 40px; }
+  .receipt-header h2 { margin: 6px 0 2px; font-size: 18px; color: #4ade80; }
+  .receipt-header .bkid { font-size: 13px; color: #9fd8b8; letter-spacing: 1px; }
+  .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #1f4a30;
+    font-size: 14px;
+  }
+  .receipt-row span:first-child { color: #9fd8b8; }
+  .receipt-row.total { font-size: 18px; font-weight: bold; color: #4ade80; border-bottom: none; padding-top: 12px; }
+  .qr-box { text-align: center; margin-top: 18px; padding: 16px; background: #fff; border-radius: 12px; }
+  .qr-box img, .qr-box canvas { margin: 0 auto; }
+  .qr-hint { text-align: center; font-size: 13px; color: #9fd8b8; margin-top: 8px; }
+  .cash-hint {
+    text-align: center;
+    font-size: 14px;
+    color: #ffe9a8;
+    background: #4a3c1c;
+    padding: 12px;
+    border-radius: 10px;
+    margin-top: 16px;
+  }
+  .newbooking-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 2px solid #4ade80;
+    background: transparent;
+    color: #4ade80;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 16px;
+  }
+  .screenshot-hint { text-align: center; font-size: 12px; color: #6b8a76; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -113,6 +160,7 @@
 <h1>⛳ จองใช้งาน Bay</h1>
 <div class="sub">เลือก Bay ที่ต้องการ แล้วกรอกรายละเอียดการจอง</div>
 
+<div id="formContainer">
 <!-- ================= STEP A: เลือก Bay ================= -->
 <div class="card" id="bayCard">
   <label>เลือก Bay</label>
@@ -174,6 +222,41 @@
 
 <button class="submit" id="submitBtn">ยืนยันการจอง</button>
 <div id="resultMsg"></div>
+</div><!-- /formContainer -->
+
+<!-- ================= หน้าใบเสร็จ (โผล่หลังจองสำเร็จ) ================= -->
+<div class="receipt hidden" id="receiptScreen">
+  <div class="receipt-header">
+    <div class="check">✅</div>
+    <h2>จองสำเร็จ!</h2>
+    <div class="bkid" id="rcBookingId">-</div>
+  </div>
+
+  <div class="receipt-row"><span>ชื่อผู้จอง</span><span id="rcName">-</span></div>
+  <div class="receipt-row"><span>Bay</span><span id="rcBay">-</span></div>
+  <div class="receipt-row"><span>วันที่</span><span id="rcDate">-</span></div>
+  <div class="receipt-row"><span>เวลา</span><span id="rcTime">-</span></div>
+  <div class="receipt-row"><span>วิธีชำระเงิน</span><span id="rcPayment">-</span></div>
+  <div class="receipt-row total"><span>ยอดชำระ</span><span id="rcTotal">0 บาท</span></div>
+
+  <!-- โชว์เฉพาะตอนเลือกจ่ายด้วย QR -->
+  <div id="qrSection" class="hidden">
+    <div class="qr-box"><div id="qrCodeCanvas"></div></div>
+    <div class="qr-hint">
+      สแกนจ่ายผ่านแอปธนาคารของคุณ (PromptPay)<br/>ยอด <span id="qrAmount">0</span> บาท<br/><br/>
+      📌 เมื่อชำระเงินเรียบร้อยแล้ว กรุณาส่งสลิปให้ทางแชทพร้อมแจ้ง Booking ID<br/>
+      หรือโชว์สลิปพร้อมแจ้ง Booking ID กับพนักงานหน้าร้าน
+    </div>
+  </div>
+
+  <!-- โชว์เฉพาะตอนเลือกจ่ายเงินสด -->
+  <div id="cashSection" class="hidden">
+    <div class="cash-hint">💵 กรุณาชำระเงินที่เคาน์เตอร์ ก่อนถึงเวลาใช้งานอย่างน้อย 10 นาที</div>
+  </div>
+
+  <div class="screenshot-hint">📸 แคปหน้าจอนี้เก็บไว้เป็นหลักฐานการจองได้เลยครับ</div>
+  <button class="newbooking-btn" id="newBookingBtn">+ จองครั้งใหม่</button>
+</div>
 
 <script>
 // ⚠️ ใส่ Web App URL ของคุณตรงนี้ (ได้จาก Step 2)
@@ -181,6 +264,56 @@ const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz4tmq9UXnu_TApw3YSr
 
 // ⚠️ ใส่ LIFF ID ตรงนี้ (จะได้ใน Step 4 - ตอนนี้ใส่ค่าว่างไว้ก่อนได้)
 const LIFF_ID = "2011162670-ZWvLULTQ";
+
+// ⚠️ เลขเติมเงินพร้อมเพย์ของร้าน (eWallet ID 15 หลัก)
+const PROMPTPAY_ID = "004999103922430";
+
+// ---------- สร้าง PromptPay QR Payload (มาตรฐาน Thai QR Payment) ----------
+function crc16ccitt(str) {
+  let crc = 0xffff;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) {
+      crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+      crc &= 0xffff;
+    }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, "0");
+}
+function ppField(id, value) {
+  const len = String(value.length).padStart(2, "0");
+  return `${id}${len}${value}`;
+}
+function generatePromptPayPayload(idRaw, amount) {
+  const id = String(idRaw).replace(/[^0-9]/g, "");
+  let target, typeId;
+  if (id.length === 13) {
+    // เลขบัตรประชาชน / เลขผู้เสียภาษี
+    target = id;
+    typeId = "02";
+  } else if (id.length === 10) {
+    // เบอร์โทรศัพท์ -> แปลงเป็นฟอร์แมต 0066XXXXXXXXX (13 หลัก)
+    target = ("0066" + id.substring(1)).padStart(13, "0");
+    typeId = "01";
+  } else if (id.length === 15) {
+    // eWallet ID (ใช้ตรงๆ ไม่ต้องแปลง)
+    target = id;
+    typeId = "03";
+  } else {
+    target = id.padStart(13, "0");
+    typeId = "02";
+  }
+  const merchantInfo = ppField("00", "A000000677010111") + ppField(typeId, target);
+  let payload = "";
+  payload += ppField("00", "01");
+  payload += ppField("01", "12"); // dynamic QR (มีจำนวนเงินระบุ)
+  payload += ppField("29", merchantInfo);
+  payload += ppField("53", "764"); // THB
+  payload += ppField("54", Number(amount).toFixed(2));
+  payload += ppField("58", "TH");
+  payload += "6304";
+  return payload + crc16ccitt(payload);
+}
 
 let bays = [];
 let selectedBay = null;
@@ -408,11 +541,7 @@ document.getElementById("submitBtn").onclick = async () => {
     const result = await res.json();
 
     if (result.success) {
-      showMsg(
-        `✅ จองสำเร็จ! เลขที่จอง ${result.bookingId} — ${result.bayName} รวม ${result.totalPrice} บาท`,
-        "success"
-      );
-      await refreshAvailability(); // อัพเดทกริดเวลาให้ช่องที่เพิ่งจองเป็นสีเทาทันที
+      showReceipt(result);
     } else {
       showMsg("❌ " + result.message, "error");
     }
@@ -422,6 +551,50 @@ document.getElementById("submitBtn").onclick = async () => {
 
   document.getElementById("submitBtn").disabled = false;
   document.getElementById("submitBtn").textContent = "ยืนยันการจอง";
+};
+
+// ---------- แสดงหน้าใบเสร็จหลังจองสำเร็จ ----------
+function showReceipt(result) {
+  document.getElementById("formContainer").classList.add("hidden");
+  const receipt = document.getElementById("receiptScreen");
+  receipt.classList.remove("hidden");
+
+  document.getElementById("rcBookingId").textContent = "เลขที่จอง: " + result.bookingId;
+  document.getElementById("rcName").textContent = result.customerName;
+  document.getElementById("rcBay").textContent = result.bayName;
+  document.getElementById("rcDate").textContent = result.bookingDate;
+  document.getElementById("rcTime").textContent = `${result.startTime} - ${result.endTime} น. (${result.hours} ชม.)`;
+  document.getElementById("rcPayment").textContent = result.paymentMethod === "QR" ? "QR Code Payment" : "Cash / ชำระที่หน้าร้าน";
+  document.getElementById("rcTotal").textContent = result.totalPrice + " บาท";
+
+  if (result.paymentMethod === "QR") {
+    document.getElementById("qrSection").classList.remove("hidden");
+    document.getElementById("cashSection").classList.add("hidden");
+    document.getElementById("qrAmount").textContent = result.totalPrice;
+    const qrContainer = document.getElementById("qrCodeCanvas");
+    qrContainer.innerHTML = ""; // เคลียร์ QR เก่าถ้ามี
+    const payload = generatePromptPayPayload(PROMPTPAY_ID, result.totalPrice);
+    new QRCode(qrContainer, { text: payload, width: 220, height: 220 });
+  } else {
+    document.getElementById("qrSection").classList.add("hidden");
+    document.getElementById("cashSection").classList.remove("hidden");
+  }
+}
+
+document.getElementById("newBookingBtn").onclick = () => {
+  document.getElementById("receiptScreen").classList.add("hidden");
+  document.getElementById("formContainer").classList.remove("hidden");
+  document.getElementById("resultMsg").innerHTML = "";
+  // รีเซ็ตฟอร์มบางส่วน
+  document.querySelectorAll(".bay-btn").forEach(b => b.classList.remove("selected"));
+  selectedBay = null;
+  selectedPayment = null;
+  document.getElementById("payQR").classList.remove("selected");
+  document.getElementById("payCash").classList.remove("selected");
+  document.getElementById("isMember").checked = false;
+  document.getElementById("memberIdBox").classList.add("hidden");
+  document.getElementById("memberId").value = "";
+  refreshAvailability();
 };
 
 function showMsg(text, type) {
