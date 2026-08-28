@@ -176,8 +176,10 @@
         <option value="4">4 แพ็ก (40 ชั่วโมง)</option>
       </select>
 
+      <label>เลือกโปรผู้สอน</label>
+      <div id="crsCoachList">กำลังโหลด...</div>
+
       <div class="coaches-note">
-        <b>โปรผู้สอน:</b> โปรโค้ช · โปรคอปเตอร์ · โปรต้น · โปรเนตร · โปรคอม<br/><br/>
         <b>สนใจทดลองเรียนฟรี 1 ชั่วโมง?</b> กรุณาติดต่อแอดมินผ่านแชทของร้านได้เลยครับ
       </div>
     </div>
@@ -211,6 +213,7 @@
     <div class="receipt-header"><div class="check">✓</div><h2>สั่งซื้อสำเร็จ</h2></div>
     <div class="receipt-row"><span>ชื่อ</span><span id="crsRcName">-</span></div>
     <div class="receipt-row"><span>คอร์ส</span><span id="crsRcType">-</span></div>
+    <div class="receipt-row"><span>โปรผู้สอน</span><span id="crsRcCoach">-</span></div>
     <div class="receipt-row"><span>ชั่วโมง</span><span id="crsRcHours">-</span></div>
     <div class="receipt-row"><span>ยอดชำระ</span><span id="crsRcTotal">-</span></div>
     <div class="receipt-row"><span>วิธีชำระเงิน</span><span id="crsRcPayment">-</span></div>
@@ -241,11 +244,6 @@
   <div id="chbCourseStatus" class="course-status">กำลังตรวจสอบคอร์สของคุณ...</div>
 
   <div id="chbFormContainer" class="hidden">
-    <div class="card">
-      <label>เลือกโปร</label>
-      <div id="chbCoachList">กำลังโหลด...</div>
-    </div>
-
     <div class="card">
       <label>วันที่ต้องการเรียน</label>
       <input type="date" id="chbBookingDate" />
@@ -295,6 +293,8 @@ const PROMPTPAY_ID = "004999103922430";
 
 let lineUserId = "guest-test-user";
 let lineDisplayName = "";
+let allCoaches = [];
+let crsSelectedCoach = null;
 
 // ---------- PromptPay QR ----------
 function crc16ccitt(str) {
@@ -346,6 +346,11 @@ window.onload = async () => {
   initCoachPanel();
 };
 
+async function loadAllCoaches() {
+  const res = await fetch(WEBAPP_URL + "?action=getCoaches");
+  allCoaches = await res.json();
+}
+
 // ---------- แท็บสลับ ----------
 document.getElementById("tabCourse").onclick = () => switchTab("course");
 document.getElementById("tabCoach").onclick = () => switchTab("coach");
@@ -376,6 +381,24 @@ function initCoursePanel() {
     e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
   });
   document.getElementById("crsSubmitBtn").onclick = crsSubmit;
+  crsRenderCoachList();
+}
+
+async function crsRenderCoachList() {
+  if (allCoaches.length === 0) await loadAllCoaches();
+  const list = document.getElementById("crsCoachList");
+  list.innerHTML = "";
+  allCoaches.forEach(c => {
+    const btn = document.createElement("div");
+    btn.className = "coach-btn";
+    btn.textContent = c.coach_name;
+    btn.onclick = () => {
+      crsSelectedCoach = c;
+      document.querySelectorAll("#crsCoachList .coach-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    };
+    list.appendChild(btn);
+  });
 }
 
 function crsSelectType(val) {
@@ -417,6 +440,7 @@ async function crsSubmit() {
   document.getElementById("crsResultMsg").innerHTML = "";
 
   if (!crsSelectedType) return crsShowMsg("กรุณาเลือกประเภทคอร์ส", "error");
+  if (!crsSelectedCoach) return crsShowMsg("กรุณาเลือกโปรผู้สอน", "error");
   if (!name) return crsShowMsg("กรุณากรอกชื่อ-นามสกุล", "error");
   if (!isValidThaiPhone(phone)) {
     document.getElementById("crsPhoneError").style.display = "block";
@@ -434,7 +458,8 @@ async function crsSubmit() {
       lineUserId, customerName: name, phone,
       courseType: crsSelectedType, blocks,
       isMember: crsSelectedType === "ADULT" ? isMember : false,
-      memberId, paymentMethod: crsSelectedPayment
+      memberId, paymentMethod: crsSelectedPayment,
+      coachId: crsSelectedCoach.coach_id
     }
   };
   try {
@@ -455,6 +480,7 @@ function crsShowReceipt(result, name) {
   document.getElementById("crsReceiptScreen").classList.remove("hidden");
   document.getElementById("crsRcName").textContent = name;
   document.getElementById("crsRcType").textContent = crsSelectedType === "CHILD" ? "Children" : "Adult";
+  document.getElementById("crsRcCoach").textContent = crsSelectedCoach ? crsSelectedCoach.coach_name : "-";
   document.getElementById("crsRcHours").textContent = result.totalHours + " ชั่วโมง";
   document.getElementById("crsRcTotal").textContent = result.totalPrice.toLocaleString() + " บาท";
   document.getElementById("crsRcPayment").textContent = crsSelectedPayment === "QR" ? "QR Code Payment" : "Cash / ชำระที่หน้าร้าน";
@@ -477,11 +503,11 @@ function crsShowMsg(text, type) {
 // ============================================================
 // แท็บ 2: จองคิวกับโปร
 // ============================================================
-let chbCoaches = [];
-let chbSelectedCoach = null;
 let chbSelectedStartHour = null;
 let chbOccupiedHours = new Set();
 let chbMyRemainingHours = 0;
+let chbMyCoachId = null;
+let chbMyCoachName = "-";
 
 async function initCoachPanel() {
   buildChbSlotGrid();
@@ -495,7 +521,6 @@ async function initCoachPanel() {
   document.getElementById("chbNewBookingBtn").onclick = chbResetForm;
 
   await chbCheckMyCourse();
-  await chbLoadCoaches();
   await chbRefreshAvailability();
 }
 
@@ -506,9 +531,11 @@ async function chbCheckMyCourse() {
     const result = await res.json();
     if (result.hasCourse) {
       chbMyRemainingHours = result.remaining;
+      chbMyCoachId = result.coachId;
+      chbMyCoachName = result.coachName;
       box.className = "course-status";
       box.innerHTML = `<div class="cs-hours">${result.remaining} ชม.</div>
-        <div class="cs-label">ชั่วโมงคอร์สคงเหลือ</div>
+        <div class="cs-label">ชั่วโมงคอร์สคงเหลือ · โปร ${result.coachName}</div>
         <div class="cs-expiry">คอร์สหมดอายุ ${result.expiryDate}</div>`;
       document.getElementById("chbFormContainer").classList.remove("hidden");
     } else {
@@ -577,38 +604,19 @@ function chbPopulateDuration() {
   }
 }
 
-async function chbLoadCoaches() {
-  const res = await fetch(WEBAPP_URL + "?action=getCoaches");
-  chbCoaches = await res.json();
-  const list = document.getElementById("chbCoachList");
-  list.innerHTML = "";
-  chbCoaches.forEach(c => {
-    const btn = document.createElement("div");
-    btn.className = "coach-btn";
-    btn.textContent = c.coach_name;
-    btn.onclick = () => chbSelectCoach(c, btn);
-    list.appendChild(btn);
-  });
-}
-function chbSelectCoach(c, el) {
-  chbSelectedCoach = c;
-  document.querySelectorAll("#chbCoachList .coach-btn").forEach(b => b.classList.remove("selected"));
-  el.classList.add("selected");
-  chbRefreshAvailability();
-}
 async function chbRefreshAvailability() {
   chbSelectedStartHour = null;
   document.getElementById("chbDurationBox").classList.add("hidden");
-  if (!chbSelectedCoach) { chbOccupiedHours = new Set(); chbRenderSlots(); return; }
+  if (!chbMyCoachId) { chbOccupiedHours = new Set(); chbRenderSlots(); return; }
   const date = document.getElementById("chbBookingDate").value;
-  const res = await fetch(`${WEBAPP_URL}?action=getCoachBookedSlots&coachId=${chbSelectedCoach.coach_id}&date=${date}`);
+  const res = await fetch(`${WEBAPP_URL}?action=getCoachBookedSlots&coachId=${chbMyCoachId}&date=${date}`);
   const slots = await res.json();
   chbOccupiedHours = Array.isArray(slots) ? chbComputeOccupied(slots) : new Set();
   chbRenderSlots();
   chbUpdateSummary();
 }
 function chbUpdateSummary() {
-  document.getElementById("chbSumCoach").textContent = chbSelectedCoach ? chbSelectedCoach.coach_name : "-";
+  document.getElementById("chbSumCoach").textContent = chbMyCoachName;
   const date = document.getElementById("chbBookingDate").value;
   if (chbSelectedStartHour === null) {
     document.getElementById("chbSumTime").textContent = "กรุณาเลือกเวลาเริ่ม";
@@ -629,7 +637,6 @@ async function chbSubmit() {
   document.getElementById("chbPhoneError").style.display = "none";
   document.getElementById("chbResultMsg").innerHTML = "";
 
-  if (!chbSelectedCoach) return chbShowMsg("กรุณาเลือกโปรก่อนครับ", "error");
   if (chbSelectedStartHour === null) return chbShowMsg("กรุณาเลือกเวลาเริ่มก่อนครับ", "error");
   if (!name) return chbShowMsg("กรุณากรอกชื่อ-นามสกุล", "error");
   if (!isValidThaiPhone(phone)) {
@@ -646,7 +653,7 @@ async function chbSubmit() {
 
   const payload = {
     action: "createCoachingBooking",
-    data: { lineUserId, customerName: name, phone, coachId: chbSelectedCoach.coach_id, bookingDate: date, startTime, endTime }
+    data: { lineUserId, customerName: name, phone, bookingDate: date, startTime, endTime }
   };
   try {
     const res = await fetch(WEBAPP_URL, {
@@ -675,8 +682,6 @@ function chbShowReceipt(result) {
 async function chbResetForm() {
   document.getElementById("chbReceiptScreen").classList.add("hidden");
   document.getElementById("chbResultMsg").innerHTML = "";
-  document.querySelectorAll("#chbCoachList .coach-btn").forEach(b => b.classList.remove("selected"));
-  chbSelectedCoach = null;
   await chbCheckMyCourse();
   await chbRefreshAvailability();
 }
