@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EasyBirdie Golf Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<script charset="utf-8" src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #0a1410; --panel: #10201a; --panel-border: #23392c;
+    --gold: #c9a24b; --gold-light: #e6cd8f; --ivory: #f2ede1; --muted: #8ea08e;
+    --danger: #b3564a; --danger-bg: #351d1b; --confirm-bg: #16261e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--bg);
+    background-image: radial-gradient(circle at 50% -10%, rgba(201,162,75,0.10), transparent 55%);
+    color: var(--ivory); margin: 0; padding: 20px 16px 40px;
+  }
+  .brand-header { text-align: center; margin-bottom: 18px; }
+  .brand-eyebrow {
+    font-size: 11px; letter-spacing: 5px; color: var(--gold); text-transform: uppercase;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+  }
+  .brand-eyebrow::before, .brand-eyebrow::after {
+    content: ""; height: 1px; width: 24px;
+    background: linear-gradient(to var(--dir,right), transparent, var(--gold));
+  }
+  .brand-eyebrow::after { --dir: left; }
+  h1.brand-title {
+    font-family: 'Cormorant Garamond', serif; font-weight: 600; font-style: italic;
+    font-size: 26px; margin: 8px 0 4px; color: var(--ivory);
+  }
+  h1.brand-title .accent { color: var(--gold-light); font-style: normal; }
+  .brand-sub { color: var(--muted); font-size: 12.5px; letter-spacing: 0.5px; }
+
+  /* ---------- แท็บสลับ ---------- */
+  .tab-bar {
+    display: flex; gap: 8px; margin: 20px 0 18px;
+    border: 1px solid var(--panel-border); border-radius: 10px; padding: 4px; background: var(--panel);
+  }
+  .tab-btn {
+    flex: 1; text-align: center; padding: 11px 6px; border-radius: 7px; cursor: pointer;
+    font-size: 13.5px; font-weight: 500; color: var(--muted); letter-spacing: 0.3px;
+  }
+  .tab-btn.active { background: linear-gradient(180deg, var(--gold-light), var(--gold)); color: #1a1408; font-weight: 600; }
+
+  .card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px; padding: 18px; margin-bottom: 14px; }
+  label { display: block; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; margin: 10px 0 8px; color: var(--muted); }
+  select, input[type=date], input[type=text], input[type=tel] {
+    width: 100%; padding: 12px; border-radius: 6px; border: 1px solid var(--panel-border);
+    background: var(--bg); color: var(--ivory); font-family: 'Jost', sans-serif; font-size: 15px;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--gold); }
+  .field-error { font-size: 12px; color: var(--danger); margin-top: 4px; display: none; }
+
+  .type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .type-btn { padding: 16px 10px; border-radius: 8px; border: 1px solid var(--panel-border); background: var(--bg); color: var(--ivory); text-align: center; cursor: pointer; }
+  .type-btn .t-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; }
+  .type-btn .t-sub { font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+  .type-btn.selected { border-color: var(--gold); background: rgba(201,162,75,0.14); }
+  .type-btn.selected .t-title { color: var(--gold-light); }
+
+  .coaches-note { font-size: 12.5px; color: var(--muted); line-height: 1.8; margin-top: 14px; border-top: 1px solid var(--panel-border); padding-top: 14px; }
+  .coaches-note b { color: var(--gold-light); }
+
+  .checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+  .checkbox-row input { width: 17px; height: 17px; accent-color: var(--gold); }
+  .checkbox-row label { margin: 0; text-transform: none; letter-spacing: 0; font-size: 14px; color: var(--ivory); }
+
+  .pay-option { display: flex; align-items: center; gap: 10px; padding: 13px; border: 1px solid var(--panel-border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; font-size: 14.5px; }
+  .pay-option.selected { border-color: var(--gold); background: rgba(201,162,75,0.10); }
+
+  .summary-line { display: flex; justify-content: space-between; padding: 5px 0; font-size: 14px; color: var(--muted); }
+  .summary-line span:last-child { color: var(--ivory); }
+  .summary-total { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; color: var(--gold-light); text-align: right; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--panel-border); }
+
+  .coach-btn {
+    display: block; width: 100%; padding: 14px 16px; margin-bottom: 10px; border-radius: 8px;
+    border: 1px solid var(--panel-border); background: var(--bg); color: var(--ivory);
+    font-family: 'Jost', sans-serif; font-size: 15px; font-weight: 500; text-align: left; cursor: pointer;
+  }
+  .coach-btn.selected { border-color: var(--gold); background: linear-gradient(180deg, rgba(201,162,75,0.14), rgba(201,162,75,0.04)); color: var(--gold-light); }
+
+  .slot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 6px; }
+  .slot-btn { padding: 10px 4px; border-radius: 6px; border: 1px solid var(--panel-border); background: var(--bg); color: var(--ivory); font-family: 'Jost', sans-serif; font-size: 13px; text-align: center; cursor: pointer; }
+  .slot-btn.selected { border-color: var(--gold); background: rgba(201,162,75,0.16); color: var(--gold-light); }
+  .slot-btn.disabled { background: #0d1713; color: #4b5c50; border-color: #1a2b21; cursor: not-allowed; text-decoration: line-through; }
+  .slot-hint { font-size: 11.5px; color: var(--muted); margin-top: 8px; }
+
+  .course-status { text-align: center; padding: 14px; border-radius: 10px; margin-bottom: 16px; border: 1px solid rgba(201,162,75,0.3); background: rgba(201,162,75,0.08); }
+  .course-status .cs-hours { font-family: 'Cormorant Garamond', serif; font-size: 28px; color: var(--gold-light); font-weight: 600; }
+  .course-status .cs-label { font-size: 11.5px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
+  .course-status .cs-expiry { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .course-status.none { border-color: #5c2b26; background: var(--danger-bg); color: #ffb4a8; }
+
+  button.submit {
+    width: 100%; padding: 16px; border-radius: 8px; border: 1px solid var(--gold);
+    background: linear-gradient(180deg, var(--gold-light), var(--gold)); color: #1a1408;
+    font-family: 'Jost', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 1px;
+    text-transform: uppercase; cursor: pointer; margin-top: 10px;
+  }
+  button.submit:disabled { background: #3a4038; border-color: #3a4038; color: #8a9088; }
+  .msg { padding: 12px 14px; border-radius: 8px; margin-top: 12px; font-size: 13.5px; }
+  .msg.error { background: var(--danger-bg); color: #ffb4a8; border: 1px solid #5c2b26; }
+  .hidden { display: none; }
+
+  .receipt { background: var(--panel); border-radius: 12px; padding: 22px; border: 1px solid var(--panel-border); position: relative; }
+  .receipt::before { content: ""; position: absolute; inset: 8px; border: 1px dashed rgba(201,162,75,0.4); border-radius: 8px; pointer-events: none; }
+  .receipt-header { text-align: center; margin-bottom: 18px; }
+  .receipt-header .check { font-size: 34px; color: var(--gold-light); }
+  .receipt-header h2 { font-family: 'Cormorant Garamond', serif; font-style: italic; margin: 8px 0 2px; font-size: 22px; color: var(--gold-light); }
+  .receipt-header .bkid { font-size: 12px; color: var(--muted); letter-spacing: 2px; }
+  .receipt-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--panel-border); font-size: 13.5px; }
+  .receipt-row span:first-child { color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-size: 11.5px; }
+  .receipt-row.total { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--gold-light); border-bottom: none; padding-top: 14px; }
+  .qr-box { text-align: center; margin-top: 18px; padding: 16px; background: #fff; border-radius: 10px; }
+  .qr-hint { text-align: center; font-size: 12.5px; color: var(--muted); margin-top: 10px; line-height: 1.7; }
+  .pending-hint { text-align: center; font-size: 13.5px; color: var(--gold-light); background: rgba(201,162,75,0.10); border: 1px solid rgba(201,162,75,0.3); padding: 14px; border-radius: 8px; margin-top: 16px; line-height: 1.7; }
+  .newbooking-btn { width: 100%; padding: 14px; border-radius: 8px; border: 1px solid var(--gold); background: transparent; color: var(--gold-light); font-family: 'Jost', sans-serif; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer; margin-top: 18px; }
+  .screenshot-hint { text-align: center; font-size: 11.5px; color: var(--muted); margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<div class="brand-header">
+  <div class="brand-eyebrow">EasyBirdie Golf Academy</div>
+  <h1 class="brand-title">เรียนกอล์ฟกับ<span class="accent">โปรมืออาชีพ</span></h1>
+  <div class="brand-sub">ซื้อคอร์สเรียน หรือจองคิวเรียนกับโปรที่คุณเลือก</div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab-btn active" id="tabCourse">ซื้อคอร์สเรียน</div>
+  <div class="tab-btn" id="tabCoach">จองคิวกับโปร</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- แท็บ 1: ซื้อคอร์สเรียน -->
+<!-- ============================================================ -->
+<div id="panelCourse">
+  <div id="crsFormContainer">
+    <div class="card">
+      <label>ประเภทคอร์ส</label>
+      <div class="type-grid">
+        <div class="type-btn" id="crsTypeAdult" data-val="ADULT">
+          <div class="t-title">Adult</div>
+          <div class="t-sub">18,000 / 15,000 (Member)<br/>ต่อ 10 ชม.</div>
+        </div>
+        <div class="type-btn" id="crsTypeChild" data-val="CHILD">
+          <div class="t-title">Children</div>
+          <div class="t-sub">13,000<br/>ต่อ 10 ชม.</div>
+        </div>
+      </div>
+
+      <div id="crsMemberBox" class="hidden">
+        <div class="checkbox-row">
+          <input type="checkbox" id="crsIsMember" />
+          <label>ฉันเป็น Member อยู่แล้ว (รับราคาพิเศษ)</label>
+        </div>
+        <div id="crsMemberIdBox" class="hidden">
+          <label>เลขสมาชิก (Member ID)</label>
+          <input type="text" id="crsMemberId" placeholder="เช่น M0001" />
+        </div>
+      </div>
+
+      <label>จำนวนคอร์ส (แพ็กละ 10 ชั่วโมง)</label>
+      <select id="crsBlocks">
+        <option value="1">1 แพ็ก (10 ชั่วโมง)</option>
+        <option value="2">2 แพ็ก (20 ชั่วโมง)</option>
+        <option value="3">3 แพ็ก (30 ชั่วโมง)</option>
+        <option value="4">4 แพ็ก (40 ชั่วโมง)</option>
+      </select>
+
+      <div class="coaches-note">
+        <b>โปรผู้สอน:</b> โปรโค้ช · โปรคอปเตอร์ · โปรต้น · โปรเนตร · โปรคอม<br/><br/>
+        <b>สนใจทดลองเรียนฟรี 1 ชั่วโมง?</b> กรุณาติดต่อแอดมินผ่านแชทของร้านได้เลยครับ
+      </div>
+    </div>
+
+    <div class="card">
+      <label>ชื่อ-นามสกุล</label>
+      <input type="text" id="crsCustomerName" placeholder="ชื่อลูกค้า" />
+      <label>เบอร์โทรศัพท์</label>
+      <input type="tel" id="crsPhone" placeholder="0812345678" maxlength="10" inputmode="numeric" />
+      <div class="field-error" id="crsPhoneError">กรุณากรอกเบอร์โทร 10 หลัก ขึ้นต้นด้วย 0</div>
+    </div>
+
+    <div class="card">
+      <label>วิธีการชำระเงิน</label>
+      <div class="pay-option" id="crsPayQR" data-val="QR"><span>💳</span><span>QR Code Payment</span></div>
+      <div class="pay-option" id="crsPayCash" data-val="CASH"><span>💵</span><span>Cash / ชำระที่หน้าร้าน</span></div>
+    </div>
+
+    <div class="card">
+      <div class="summary-line"><span>ประเภทคอร์ส</span><span id="crsSumType">-</span></div>
+      <div class="summary-line"><span>จำนวนชั่วโมง</span><span id="crsSumHours">-</span></div>
+      <div class="summary-line"><span>อายุคอร์ส</span><span id="crsSumExpiry">-</span></div>
+      <div class="summary-total" id="crsSumTotal">รวม 0 บาท</div>
+    </div>
+
+    <button class="submit" id="crsSubmitBtn">ซื้อคอร์สเรียน</button>
+    <div id="crsResultMsg"></div>
+  </div>
+
+  <div class="receipt hidden" id="crsReceiptScreen">
+    <div class="receipt-header"><div class="check">✓</div><h2>สั่งซื้อสำเร็จ</h2></div>
+    <div class="receipt-row"><span>ชื่อ</span><span id="crsRcName">-</span></div>
+    <div class="receipt-row"><span>คอร์ส</span><span id="crsRcType">-</span></div>
+    <div class="receipt-row"><span>ชั่วโมง</span><span id="crsRcHours">-</span></div>
+    <div class="receipt-row"><span>ยอดชำระ</span><span id="crsRcTotal">-</span></div>
+    <div class="receipt-row"><span>วิธีชำระเงิน</span><span id="crsRcPayment">-</span></div>
+
+    <div id="crsCashResult" class="hidden">
+      <div class="pending-hint">
+        กรุณาชำระเงินสดที่หน้าร้าน<br/><br/>
+        กรุณาเก็บภาพหน้าจอนี้ไว้ แล้วแจ้งพนักงานหน้าร้านเพื่อยืนยันการชำระเงินและเปิดใช้งานคอร์ส<br/><br/>
+        เมื่อพนักงานยืนยันแล้ว ระบบจะส่งเลขสมาชิกของคุณกลับมาทาง LINE ทันที
+      </div>
+    </div>
+    <div id="crsQrResult" class="hidden">
+      <div class="qr-box"><div id="crsQrCodeCanvas"></div></div>
+      <div class="qr-hint">สแกนจ่ายผ่านแอปธนาคารของคุณ (PromptPay)</div>
+      <div class="pending-hint">
+        เมื่อชำระเงินเรียบร้อยแล้ว กรุณาแจ้งพนักงานทางแชท หรือแจ้งตรงเคาน์เตอร์หน้าร้าน พร้อมส่งสลิป<br/><br/>
+        เมื่อตรวจสอบเรียบร้อยแล้ว ระบบจะส่งเลขสมาชิกของคุณกลับมาทาง LINE ทันที
+      </div>
+    </div>
+    <div class="screenshot-hint">แคปหน้าจอนี้เก็บไว้เป็นหลักฐานได้เลยครับ</div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- แท็บ 2: จองคิวกับโปร -->
+<!-- ============================================================ -->
+<div id="panelCoach" class="hidden">
+  <div id="chbCourseStatus" class="course-status">กำลังตรวจสอบคอร์สของคุณ...</div>
+
+  <div id="chbFormContainer" class="hidden">
+    <div class="card">
+      <label>เลือกโปร</label>
+      <div id="chbCoachList">กำลังโหลด...</div>
+    </div>
+
+    <div class="card">
+      <label>วันที่ต้องการเรียน</label>
+      <input type="date" id="chbBookingDate" />
+      <label>เลือกเวลาเริ่ม</label>
+      <div class="slot-grid" id="chbSlotGrid">กำลังโหลด...</div>
+      <div class="slot-hint">ช่องสีจาง (ขีดทับ) หมายถึงโปรไม่ว่างแล้ว</div>
+      <div id="chbDurationBox" class="hidden">
+        <label>จำนวนชั่วโมง</label>
+        <select id="chbDuration"></select>
+      </div>
+    </div>
+
+    <div class="card">
+      <label>ชื่อ-นามสกุล</label>
+      <input type="text" id="chbCustomerName" placeholder="ชื่อลูกค้า" />
+      <label>เบอร์โทรศัพท์</label>
+      <input type="tel" id="chbPhone" placeholder="0812345678" maxlength="10" inputmode="numeric" />
+      <div class="field-error" id="chbPhoneError">กรุณากรอกเบอร์โทร 10 หลัก ขึ้นต้นด้วย 0</div>
+    </div>
+
+    <div class="card">
+      <div class="summary-line"><span>โปร</span><span id="chbSumCoach">-</span></div>
+      <div class="summary-line"><span>วันเวลา</span><span id="chbSumTime">-</span></div>
+      <div class="summary-line"><span>ใช้ชั่วโมงคอร์ส</span><span id="chbSumHours">-</span></div>
+    </div>
+
+    <button class="submit" id="chbSubmitBtn">ยืนยันการจองคิว</button>
+    <div id="chbResultMsg"></div>
+  </div>
+
+  <div class="receipt hidden" id="chbReceiptScreen">
+    <div class="receipt-header"><div class="check">✓</div><h2>จองคิวสำเร็จ</h2><div class="bkid" id="chbRcBookingId">-</div></div>
+    <div class="receipt-row"><span>ชื่อ</span><span id="chbRcName">-</span></div>
+    <div class="receipt-row"><span>โปร</span><span id="chbRcCoach">-</span></div>
+    <div class="receipt-row"><span>วันที่</span><span id="chbRcDate">-</span></div>
+    <div class="receipt-row"><span>เวลา</span><span id="chbRcTime">-</span></div>
+    <div class="receipt-row total"><span>ชั่วโมงคอร์สคงเหลือ</span><span id="chbRcRemaining">-</span></div>
+    <div class="screenshot-hint">แคปหน้าจอนี้เก็บไว้เป็นหลักฐานได้เลยครับ</div>
+    <button class="newbooking-btn" id="chbNewBookingBtn">+ จองคิวใหม่</button>
+  </div>
+</div>
+
+<script>
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz4tmq9UXnu_TApw3YSrlRCq9Cxy152DmW47B5GGRKxrDOf2NksPkfL2EvkDbodH9_8lw/exec";
+const LIFF_ID = "2011162670-KMqYBuuf";
+const PROMPTPAY_ID = "004999103922430";
+
+let lineUserId = "guest-test-user";
+let lineDisplayName = "";
+
+// ---------- PromptPay QR ----------
+function crc16ccitt(str) {
+  let crc = 0xffff;
+  for (let i = 0; i < str.length; i++) {
+    crc ^= str.charCodeAt(i) << 8;
+    for (let j = 0; j < 8; j++) { crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1); crc &= 0xffff; }
+  }
+  return crc.toString(16).toUpperCase().padStart(4, "0");
+}
+function ppField(id, value) { return `${id}${String(value.length).padStart(2,"0")}${value}`; }
+function generatePromptPayPayload(idRaw, amount) {
+  const id = String(idRaw).replace(/[^0-9]/g, "");
+  let target, typeId;
+  if (id.length === 13) { target = id; typeId = "02"; }
+  else if (id.length === 10) { target = ("0066" + id.substring(1)).padStart(13, "0"); typeId = "01"; }
+  else if (id.length === 15) { target = id; typeId = "03"; }
+  else { target = id.padStart(13, "0"); typeId = "02"; }
+  const merchantInfo = ppField("00", "A000000677010111") + ppField(typeId, target);
+  let payload = "";
+  payload += ppField("00", "01");
+  payload += ppField("01", "12");
+  payload += ppField("29", merchantInfo);
+  payload += ppField("53", "764");
+  payload += ppField("54", Number(amount).toFixed(2));
+  payload += ppField("58", "TH");
+  payload += "6304";
+  return payload + crc16ccitt(payload);
+}
+function isValidThaiPhone(phone) { return /^0[0-9]{9}$/.test(phone); }
+function timeStrToMinutes(t) { const [h,m] = String(t).split(":").map(Number); return h*60+m; }
+
+// ---------- init ----------
+window.onload = async () => {
+  try {
+    if (LIFF_ID !== "YOUR_ACADEMY_LIFF_ID_HERE") {
+      await liff.init({ liffId: LIFF_ID });
+      if (liff.isLoggedIn()) {
+        const profile = await liff.getProfile();
+        lineUserId = profile.userId;
+        lineDisplayName = profile.displayName;
+        document.getElementById("crsCustomerName").value = lineDisplayName;
+        document.getElementById("chbCustomerName").value = lineDisplayName;
+      } else { liff.login(); }
+    }
+  } catch (err) { console.log("LIFF init skipped/failed:", err); }
+
+  initCoursePanel();
+  initCoachPanel();
+};
+
+// ---------- แท็บสลับ ----------
+document.getElementById("tabCourse").onclick = () => switchTab("course");
+document.getElementById("tabCoach").onclick = () => switchTab("coach");
+function switchTab(which) {
+  document.getElementById("tabCourse").classList.toggle("active", which === "course");
+  document.getElementById("tabCoach").classList.toggle("active", which === "coach");
+  document.getElementById("panelCourse").classList.toggle("hidden", which !== "course");
+  document.getElementById("panelCoach").classList.toggle("hidden", which !== "coach");
+}
+
+// ============================================================
+// แท็บ 1: ซื้อคอร์สเรียน
+// ============================================================
+let crsSelectedType = null;
+let crsSelectedPayment = null;
+
+function initCoursePanel() {
+  document.getElementById("crsTypeAdult").onclick = () => crsSelectType("ADULT");
+  document.getElementById("crsTypeChild").onclick = () => crsSelectType("CHILD");
+  document.getElementById("crsIsMember").addEventListener("change", e => {
+    document.getElementById("crsMemberIdBox").classList.toggle("hidden", !e.target.checked);
+    crsUpdateSummary();
+  });
+  document.getElementById("crsBlocks").addEventListener("change", crsUpdateSummary);
+  document.getElementById("crsPayQR").onclick = () => crsSelectPayment("QR");
+  document.getElementById("crsPayCash").onclick = () => crsSelectPayment("CASH");
+  document.getElementById("crsPhone").addEventListener("input", e => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+  });
+  document.getElementById("crsSubmitBtn").onclick = crsSubmit;
+}
+
+function crsSelectType(val) {
+  crsSelectedType = val;
+  document.getElementById("crsTypeAdult").classList.toggle("selected", val === "ADULT");
+  document.getElementById("crsTypeChild").classList.toggle("selected", val === "CHILD");
+  document.getElementById("crsMemberBox").classList.toggle("hidden", val !== "ADULT");
+  crsUpdateSummary();
+}
+function crsSelectPayment(val) {
+  crsSelectedPayment = val;
+  document.getElementById("crsPayQR").classList.toggle("selected", val === "QR");
+  document.getElementById("crsPayCash").classList.toggle("selected", val === "CASH");
+}
+function crsPricePerBlock() {
+  if (crsSelectedType === "CHILD") return 13000;
+  if (crsSelectedType === "ADULT") return document.getElementById("crsIsMember").checked ? 15000 : 18000;
+  return 0;
+}
+function crsUpdateSummary() {
+  const blocks = Number(document.getElementById("crsBlocks").value);
+  const hours = blocks * 10;
+  const total = crsPricePerBlock() * blocks;
+  const months = blocks * 3;
+  document.getElementById("crsSumType").textContent = crsSelectedType === "CHILD" ? "Children" : crsSelectedType === "ADULT" ? "Adult" : "-";
+  document.getElementById("crsSumHours").textContent = hours + " ชั่วโมง";
+  document.getElementById("crsSumExpiry").textContent = months + " เดือน";
+  document.getElementById("crsSumTotal").textContent = "รวม " + total.toLocaleString() + " บาท";
+}
+
+async function crsSubmit() {
+  const name = document.getElementById("crsCustomerName").value.trim();
+  const phone = document.getElementById("crsPhone").value.trim();
+  const isMember = document.getElementById("crsIsMember").checked;
+  const memberId = document.getElementById("crsMemberId").value.trim();
+  const blocks = document.getElementById("crsBlocks").value;
+
+  document.getElementById("crsPhoneError").style.display = "none";
+  document.getElementById("crsResultMsg").innerHTML = "";
+
+  if (!crsSelectedType) return crsShowMsg("กรุณาเลือกประเภทคอร์ส", "error");
+  if (!name) return crsShowMsg("กรุณากรอกชื่อ-นามสกุล", "error");
+  if (!isValidThaiPhone(phone)) {
+    document.getElementById("crsPhoneError").style.display = "block";
+    return crsShowMsg("กรุณากรอกเบอร์โทรให้ถูกต้อง (10 หลัก ขึ้นต้นด้วย 0)", "error");
+  }
+  if (crsSelectedType === "ADULT" && isMember && !memberId) return crsShowMsg("กรุณากรอกเลขสมาชิก", "error");
+  if (!crsSelectedPayment) return crsShowMsg("กรุณาเลือกวิธีชำระเงิน", "error");
+
+  document.getElementById("crsSubmitBtn").disabled = true;
+  document.getElementById("crsSubmitBtn").textContent = "กำลังบันทึก...";
+
+  const payload = {
+    action: "purchaseCourse",
+    data: {
+      lineUserId, customerName: name, phone,
+      courseType: crsSelectedType, blocks,
+      isMember: crsSelectedType === "ADULT" ? isMember : false,
+      memberId, paymentMethod: crsSelectedPayment
+    }
+  };
+  try {
+    const res = await fetch(WEBAPP_URL, {
+      method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (result.success) { crsShowReceipt(result, name); }
+    else { crsShowMsg("❌ " + result.message, "error"); }
+  } catch (err) { crsShowMsg("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + err.message, "error"); }
+
+  document.getElementById("crsSubmitBtn").disabled = false;
+  document.getElementById("crsSubmitBtn").textContent = "ซื้อคอร์สเรียน";
+}
+
+function crsShowReceipt(result, name) {
+  document.getElementById("crsFormContainer").classList.add("hidden");
+  document.getElementById("crsReceiptScreen").classList.remove("hidden");
+  document.getElementById("crsRcName").textContent = name;
+  document.getElementById("crsRcType").textContent = crsSelectedType === "CHILD" ? "Children" : "Adult";
+  document.getElementById("crsRcHours").textContent = result.totalHours + " ชั่วโมง";
+  document.getElementById("crsRcTotal").textContent = result.totalPrice.toLocaleString() + " บาท";
+  document.getElementById("crsRcPayment").textContent = crsSelectedPayment === "QR" ? "QR Code Payment" : "Cash / ชำระที่หน้าร้าน";
+
+  if (crsSelectedPayment === "CASH") {
+    document.getElementById("crsCashResult").classList.remove("hidden");
+    document.getElementById("crsQrResult").classList.add("hidden");
+  } else {
+    document.getElementById("crsQrResult").classList.remove("hidden");
+    document.getElementById("crsCashResult").classList.add("hidden");
+    const qrContainer = document.getElementById("crsQrCodeCanvas");
+    qrContainer.innerHTML = "";
+    new QRCode(qrContainer, { text: generatePromptPayPayload(PROMPTPAY_ID, result.totalPrice), width: 220, height: 220 });
+  }
+}
+function crsShowMsg(text, type) {
+  document.getElementById("crsResultMsg").innerHTML = `<div class="msg ${type}">${text}</div>`;
+}
+
+// ============================================================
+// แท็บ 2: จองคิวกับโปร
+// ============================================================
+let chbCoaches = [];
+let chbSelectedCoach = null;
+let chbSelectedStartHour = null;
+let chbOccupiedHours = new Set();
+let chbMyRemainingHours = 0;
+
+async function initCoachPanel() {
+  buildChbSlotGrid();
+  document.getElementById("chbBookingDate").valueAsDate = new Date();
+  document.getElementById("chbBookingDate").addEventListener("change", chbRefreshAvailability);
+  document.getElementById("chbDuration").addEventListener("change", chbUpdateSummary);
+  document.getElementById("chbPhone").addEventListener("input", e => {
+    e.target.value = e.target.value.replace(/[^0-9]/g, "").slice(0, 10);
+  });
+  document.getElementById("chbSubmitBtn").onclick = chbSubmit;
+  document.getElementById("chbNewBookingBtn").onclick = chbResetForm;
+
+  await chbCheckMyCourse();
+  await chbLoadCoaches();
+  await chbRefreshAvailability();
+}
+
+async function chbCheckMyCourse() {
+  const box = document.getElementById("chbCourseStatus");
+  try {
+    const res = await fetch(`${WEBAPP_URL}?action=getMyCourseStatus&lineUserId=${lineUserId}`);
+    const result = await res.json();
+    if (result.hasCourse) {
+      chbMyRemainingHours = result.remaining;
+      box.className = "course-status";
+      box.innerHTML = `<div class="cs-hours">${result.remaining} ชม.</div>
+        <div class="cs-label">ชั่วโมงคอร์สคงเหลือ</div>
+        <div class="cs-expiry">คอร์สหมดอายุ ${result.expiryDate}</div>`;
+      document.getElementById("chbFormContainer").classList.remove("hidden");
+    } else {
+      box.className = "course-status none";
+      box.innerHTML = `ไม่พบคอร์สที่ใช้งานได้ในขณะนี้<br/>กรุณาซื้อคอร์สเรียนในแท็บ "ซื้อคอร์สเรียน" ก่อนนะครับ`;
+      document.getElementById("chbFormContainer").classList.add("hidden");
+    }
+  } catch (err) {
+    box.className = "course-status none";
+    box.textContent = "เกิดข้อผิดพลาดในการตรวจสอบคอร์ส: " + err.message;
+  }
+}
+
+function buildChbSlotGrid() {
+  const grid = document.getElementById("chbSlotGrid");
+  grid.innerHTML = "";
+  for (let h = 10; h <= 22; h++) {
+    const btn = document.createElement("div");
+    btn.className = "slot-btn";
+    btn.textContent = String(h).padStart(2, "0") + ":00";
+    btn.dataset.hour = h;
+    btn.onclick = () => chbOnSlotClick(h);
+    grid.appendChild(btn);
+  }
+}
+function chbComputeOccupied(slots) {
+  const occ = new Set();
+  for (let h = 10; h <= 22; h++) {
+    const cs = h*60, ce = (h+1)*60;
+    const overlap = slots.some(s => {
+      const ss = timeStrToMinutes(s.start), se = timeStrToMinutes(s.end);
+      return !(ce <= ss || cs >= se);
+    });
+    if (overlap) occ.add(h);
+  }
+  return occ;
+}
+function chbRenderSlots() {
+  document.querySelectorAll("#chbSlotGrid .slot-btn").forEach(btn => {
+    const h = Number(btn.dataset.hour);
+    btn.classList.toggle("disabled", chbOccupiedHours.has(h));
+    btn.classList.toggle("selected", h === chbSelectedStartHour);
+  });
+}
+function chbOnSlotClick(h) {
+  if (chbOccupiedHours.has(h)) return;
+  chbSelectedStartHour = h;
+  chbRenderSlots();
+  chbPopulateDuration();
+  document.getElementById("chbDurationBox").classList.remove("hidden");
+  chbUpdateSummary();
+}
+function chbPopulateDuration() {
+  const select = document.getElementById("chbDuration");
+  select.innerHTML = "";
+  let maxDur = 0;
+  for (let h = chbSelectedStartHour; h < Math.min(chbSelectedStartHour + 4, 23); h++) {
+    if (chbOccupiedHours.has(h)) break;
+    maxDur++;
+  }
+  maxDur = Math.min(maxDur, Math.floor(chbMyRemainingHours) || maxDur);
+  for (let d = 1; d <= maxDur; d++) {
+    const opt = document.createElement("option");
+    opt.value = d; opt.textContent = d + " ชั่วโมง";
+    select.appendChild(opt);
+  }
+}
+
+async function chbLoadCoaches() {
+  const res = await fetch(WEBAPP_URL + "?action=getCoaches");
+  chbCoaches = await res.json();
+  const list = document.getElementById("chbCoachList");
+  list.innerHTML = "";
+  chbCoaches.forEach(c => {
+    const btn = document.createElement("div");
+    btn.className = "coach-btn";
+    btn.textContent = c.coach_name;
+    btn.onclick = () => chbSelectCoach(c, btn);
+    list.appendChild(btn);
+  });
+}
+function chbSelectCoach(c, el) {
+  chbSelectedCoach = c;
+  document.querySelectorAll("#chbCoachList .coach-btn").forEach(b => b.classList.remove("selected"));
+  el.classList.add("selected");
+  chbRefreshAvailability();
+}
+async function chbRefreshAvailability() {
+  chbSelectedStartHour = null;
+  document.getElementById("chbDurationBox").classList.add("hidden");
+  if (!chbSelectedCoach) { chbOccupiedHours = new Set(); chbRenderSlots(); return; }
+  const date = document.getElementById("chbBookingDate").value;
+  const res = await fetch(`${WEBAPP_URL}?action=getCoachBookedSlots&coachId=${chbSelectedCoach.coach_id}&date=${date}`);
+  const slots = await res.json();
+  chbOccupiedHours = Array.isArray(slots) ? chbComputeOccupied(slots) : new Set();
+  chbRenderSlots();
+  chbUpdateSummary();
+}
+function chbUpdateSummary() {
+  document.getElementById("chbSumCoach").textContent = chbSelectedCoach ? chbSelectedCoach.coach_name : "-";
+  const date = document.getElementById("chbBookingDate").value;
+  if (chbSelectedStartHour === null) {
+    document.getElementById("chbSumTime").textContent = "กรุณาเลือกเวลาเริ่ม";
+    document.getElementById("chbSumHours").textContent = "-";
+    return;
+  }
+  const hours = Number(document.getElementById("chbDuration").value || 0);
+  const startLabel = String(chbSelectedStartHour).padStart(2, "0") + ":00";
+  document.getElementById("chbSumTime").textContent = `${date} เวลา ${startLabel} (${hours} ชม.)`;
+  document.getElementById("chbSumHours").textContent = hours + " ชม. (เหลือหลังจอง " + (chbMyRemainingHours - hours) + " ชม.)";
+}
+
+async function chbSubmit() {
+  const name = document.getElementById("chbCustomerName").value.trim();
+  const phone = document.getElementById("chbPhone").value.trim();
+  const date = document.getElementById("chbBookingDate").value;
+
+  document.getElementById("chbPhoneError").style.display = "none";
+  document.getElementById("chbResultMsg").innerHTML = "";
+
+  if (!chbSelectedCoach) return chbShowMsg("กรุณาเลือกโปรก่อนครับ", "error");
+  if (chbSelectedStartHour === null) return chbShowMsg("กรุณาเลือกเวลาเริ่มก่อนครับ", "error");
+  if (!name) return chbShowMsg("กรุณากรอกชื่อ-นามสกุล", "error");
+  if (!isValidThaiPhone(phone)) {
+    document.getElementById("chbPhoneError").style.display = "block";
+    return chbShowMsg("กรุณากรอกเบอร์โทรให้ถูกต้อง (10 หลัก ขึ้นต้นด้วย 0)", "error");
+  }
+
+  const hours = Number(document.getElementById("chbDuration").value);
+  const startTime = String(chbSelectedStartHour).padStart(2, "0") + ":00";
+  const endTime = String(chbSelectedStartHour + hours).padStart(2, "0") + ":00";
+
+  document.getElementById("chbSubmitBtn").disabled = true;
+  document.getElementById("chbSubmitBtn").textContent = "กำลังบันทึก...";
+
+  const payload = {
+    action: "createCoachingBooking",
+    data: { lineUserId, customerName: name, phone, coachId: chbSelectedCoach.coach_id, bookingDate: date, startTime, endTime }
+  };
+  try {
+    const res = await fetch(WEBAPP_URL, {
+      method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload)
+    });
+    const result = await res.json();
+    if (result.success) { chbShowReceipt(result); }
+    else { chbShowMsg("❌ " + result.message, "error"); }
+  } catch (err) { chbShowMsg("เกิดข้อผิดพลาดในการเชื่อมต่อ: " + err.message, "error"); }
+
+  document.getElementById("chbSubmitBtn").disabled = false;
+  document.getElementById("chbSubmitBtn").textContent = "ยืนยันการจองคิว";
+}
+
+function chbShowReceipt(result) {
+  document.getElementById("chbFormContainer").classList.add("hidden");
+  document.getElementById("chbReceiptScreen").classList.remove("hidden");
+  document.getElementById("chbRcBookingId").textContent = "เลขที่จอง " + result.bookingId;
+  document.getElementById("chbRcName").textContent = result.customerName;
+  document.getElementById("chbRcCoach").textContent = result.coachName;
+  document.getElementById("chbRcDate").textContent = result.bookingDate;
+  document.getElementById("chbRcTime").textContent = `${result.startTime} - ${result.endTime} น. (${result.hours} ชม.)`;
+  document.getElementById("chbRcRemaining").textContent = result.remainingHours + " ชม.";
+}
+
+async function chbResetForm() {
+  document.getElementById("chbReceiptScreen").classList.add("hidden");
+  document.getElementById("chbResultMsg").innerHTML = "";
+  document.querySelectorAll("#chbCoachList .coach-btn").forEach(b => b.classList.remove("selected"));
+  chbSelectedCoach = null;
+  await chbCheckMyCourse();
+  await chbRefreshAvailability();
+}
+function chbShowMsg(text, type) {
+  document.getElementById("chbResultMsg").innerHTML = `<div class="msg ${type}">${text}</div>`;
+}
+</script>
+</body>
+</html>
