@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>EasyBirdie Club — Staff Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a1410; --panel: #10201a; --panel-border: #23392c;
+    --gold: #c9a24b; --gold-light: #e6cd8f; --ivory: #f2ede1; --muted: #8ea08e;
+    --danger: #b3564a; --danger-bg: #351d1b; --confirm-bg: #16261e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Jost', sans-serif; background: var(--bg); color: var(--ivory);
+    margin: 0; padding: 20px 16px 60px;
+    background-image: radial-gradient(circle at 50% -10%, rgba(201,162,75,0.08), transparent 55%);
+  }
+  .wrap { max-width: 900px; margin: 0 auto; }
+
+  /* ---------- PIN gate ---------- */
+  #pinGate {
+    min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  }
+  #pinGate input {
+    margin-top: 16px; padding: 14px; width: 200px; text-align: center; letter-spacing: 6px; font-size: 20px;
+    border-radius: 8px; border: 1px solid var(--panel-border); background: var(--panel); color: var(--ivory);
+  }
+  #pinGate button {
+    margin-top: 14px; padding: 12px 28px; border-radius: 8px; border: 1px solid var(--gold);
+    background: linear-gradient(180deg, var(--gold-light), var(--gold)); color: #1a1408;
+    font-weight: 600; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; font-size: 13px;
+  }
+  #pinError { color: #ffb4a8; font-size: 13px; margin-top: 10px; display: none; }
+
+  h1.brand-title { font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 26px; color: var(--gold-light); margin: 0 0 4px; }
+  .brand-sub { color: var(--muted); font-size: 12.5px; }
+
+  /* ---------- overview cards ---------- */
+  .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0; }
+  .stat-card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px; padding: 16px; text-align: center; }
+  .stat-card .num { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 700; color: var(--gold-light); }
+  .stat-card .lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+  .stat-card.alert .num { color: #ff9d8f; }
+
+  /* ---------- tabs ---------- */
+  .tab-bar { display: flex; gap: 8px; margin: 20px 0 14px; overflow-x: auto; }
+  .tab-btn {
+    padding: 9px 16px; border-radius: 20px; border: 1px solid var(--panel-border);
+    background: var(--panel); color: var(--muted); font-size: 13px; white-space: nowrap; cursor: pointer;
+  }
+  .tab-btn.active { border-color: var(--gold); background: rgba(201,162,75,0.14); color: var(--gold-light); }
+
+  /* ---------- pending item cards ---------- */
+  .pending-card {
+    background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px;
+    padding: 16px; margin-bottom: 10px;
+  }
+  .pending-card .type-tag {
+    display: inline-block; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase;
+    color: var(--gold-light); background: rgba(201,162,75,0.14); padding: 3px 8px; border-radius: 5px; margin-bottom: 8px;
+  }
+  .pending-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 3px 0; }
+  .pending-row span:first-child { color: var(--muted); }
+  .confirm-btn {
+    width: 100%; margin-top: 12px; padding: 11px; border-radius: 7px; border: 1px solid var(--gold);
+    background: linear-gradient(180deg, var(--gold-light), var(--gold)); color: #1a1408;
+    font-weight: 600; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer;
+  }
+  .confirm-btn:disabled { background: #3a4038; border-color: #3a4038; color: #8a9088; }
+  .empty-state { text-align: center; color: var(--muted); padding: 40px 0; font-size: 14px; }
+  .refresh-btn {
+    display: block; margin: 0 auto 16px; padding: 8px 20px; border-radius: 20px; border: 1px solid var(--panel-border);
+    background: var(--panel); color: var(--muted); font-size: 12.5px; cursor: pointer;
+  }
+  .hidden { display: none; }
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--confirm-bg); color: var(--gold-light); padding: 12px 20px; border-radius: 8px;
+    font-size: 13.5px; border: 1px solid rgba(201,162,75,0.3); z-index: 100;
+  }
+</style>
+</head>
+<body>
+
+<div id="pinGate">
+  <h1 class="brand-title">EasyBirdie Club</h1>
+  <div class="brand-sub">Staff Dashboard — กรุณาใส่รหัสผ่านเพื่อเข้าใช้งาน</div>
+  <input type="password" id="pinInput" maxlength="6" inputmode="numeric" placeholder="••••" />
+  <div id="pinError">รหัสไม่ถูกต้อง กรุณาลองใหม่</div>
+  <button id="pinSubmit">เข้าสู่ระบบ</button>
+</div>
+
+<div class="wrap hidden" id="dashboardWrap">
+  <h1 class="brand-title">Staff Dashboard</h1>
+  <div class="brand-sub">ภาพรวมระบบ EasyBirdie Club</div>
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="num" id="statToday">-</div><div class="lbl">การจองวันนี้ (Bay)</div></div>
+    <div class="stat-card alert"><div class="num" id="statPending">-</div><div class="lbl">รอตรวจสอบการชำระเงิน</div></div>
+    <div class="stat-card"><div class="num" id="statMembers">-</div><div class="lbl">สมาชิก Active</div></div>
+    <div class="stat-card"><div class="num" id="statRevenue">-</div><div class="lbl">ยอดขายเดือนนี้ (บาท)</div></div>
+  </div>
+
+  <button class="refresh-btn" id="refreshBtn">↻ รีเฟรชข้อมูล</button>
+
+  <div class="tab-bar">
+    <div class="tab-btn active" data-tab="all">ทั้งหมด</div>
+    <div class="tab-btn" data-tab="booking">จอง Bay</div>
+    <div class="tab-btn" data-tab="membership">Member</div>
+    <div class="tab-btn" data-tab="course">คอร์สเรียน</div>
+  </div>
+
+  <div id="pendingList"></div>
+</div>
+
+<script>
+const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz4tmq9UXnu_TApw3YSrlRCq9Cxy152DmW47B5GGRKxrDOf2NksPkfL2EvkDbodH9_8lw/exec";
+const STAFF_PIN = "1234"; // ⚠️ เปลี่ยนรหัสนี้เป็นรหัสที่ต้องการ (ป้องกันขั้นพื้นฐานเท่านั้น ไม่ใช่ระบบความปลอดภัยเต็มรูปแบบ)
+
+let currentFilter = "all";
+let dashboardData = null;
+
+document.getElementById("pinSubmit").onclick = checkPin;
+document.getElementById("pinInput").addEventListener("keypress", e => { if (e.key === "Enter") checkPin(); });
+function checkPin() {
+  const val = document.getElementById("pinInput").value;
+  if (val === STAFF_PIN) {
+    document.getElementById("pinGate").classList.add("hidden");
+    document.getElementById("dashboardWrap").classList.remove("hidden");
+    loadDashboard();
+  } else {
+    document.getElementById("pinError").style.display = "block";
+  }
+}
+
+document.getElementById("refreshBtn").onclick = loadDashboard;
+document.querySelectorAll(".tab-btn").forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFilter = btn.dataset.tab;
+    renderPendingList();
+  };
+});
+
+async function loadDashboard() {
+  document.getElementById("pendingList").innerHTML = `<div class="empty-state">กำลังโหลดข้อมูล...</div>`;
+  try {
+    const res = await fetch(WEBAPP_URL + "?action=getDashboardData");
+    dashboardData = await res.json();
+    renderStats();
+    renderPendingList();
+  } catch (err) {
+    document.getElementById("pendingList").innerHTML = `<div class="empty-state">โหลดข้อมูลไม่สำเร็จ: ${err.message}</div>`;
+  }
+}
+
+function renderStats() {
+  const s = dashboardData.stats;
+  document.getElementById("statToday").textContent = s.todayBookings;
+  document.getElementById("statPending").textContent = s.pendingCount;
+  document.getElementById("statMembers").textContent = s.activeMembers;
+  document.getElementById("statRevenue").textContent = s.revenue.toLocaleString();
+}
+
+function renderPendingList() {
+  const list = document.getElementById("pendingList");
+  list.innerHTML = "";
+
+  const items = [];
+  dashboardData.pendingBookings.forEach(b => items.push({ type: "booking", data: b }));
+  dashboardData.pendingMemberships.forEach(m => items.push({ type: "membership", data: m }));
+  dashboardData.pendingCourses.forEach(c => items.push({ type: "course", data: c }));
+
+  const filtered = currentFilter === "all" ? items : items.filter(i => i.type === currentFilter);
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state">✓ ไม่มีรายการรอตรวจสอบ</div>`;
+    return;
+  }
+
+  filtered.forEach(item => list.appendChild(renderCard(item)));
+}
+
+function renderCard(item) {
+  const card = document.createElement("div");
+  card.className = "pending-card";
+  const d = item.data;
+
+  if (item.type === "booking") {
+    card.innerHTML = `
+      <div class="type-tag">จอง Bay</div>
+      <div class="pending-row"><span>เลขที่จอง</span><span>${d.booking_id}</span></div>
+      <div class="pending-row"><span>ลูกค้า</span><span>${d.customer_name} (${d.phone})</span></div>
+      <div class="pending-row"><span>วันเวลา</span><span>${d.booking_date} ${d.start_time}-${d.end_time}</span></div>
+      <div class="pending-row"><span>ยอด</span><span>${Number(d.total_price).toLocaleString()} บาท (${d.payment_method})</span></div>
+      <button class="confirm-btn" data-type="booking" data-id="${d.booking_id}">ยืนยันชำระเงินแล้ว</button>
+    `;
+  } else if (item.type === "membership") {
+    card.innerHTML = `
+      <div class="type-tag">Member</div>
+      <div class="pending-row"><span>เลขสมาชิก</span><span>${d.member_id}</span></div>
+      <div class="pending-row"><span>ลูกค้า</span><span>${d.name} (${d.phone})</span></div>
+      <div class="pending-row"><span>ประเภท</span><span>${d.member_type === "PAID" ? "รายปี (3,000 บาท)" : "จากคอร์สเรียน"}</span></div>
+      <button class="confirm-btn" data-type="membership" data-id="${d.member_id}">ยืนยันชำระเงินแล้ว</button>
+    `;
+  } else if (item.type === "course") {
+    card.innerHTML = `
+      <div class="type-tag">คอร์สเรียน</div>
+      <div class="pending-row"><span>เลขคอร์ส</span><span>${d.course_id}</span></div>
+      <div class="pending-row"><span>ลูกค้า</span><span>${d.customer_name} (${d.phone})</span></div>
+      <div class="pending-row"><span>คอร์ส</span><span>${d.course_type === "CHILD" ? "Children" : "Adult"} (${d.total_hours} ชม.)</span></div>
+      <div class="pending-row"><span>ยอด</span><span>${Number(d.price).toLocaleString()} บาท (${d.payment_method})</span></div>
+      <button class="confirm-btn" data-type="course" data-id="${d.course_id}">ยืนยันชำระเงินแล้ว</button>
+    `;
+  }
+
+  card.querySelector(".confirm-btn").onclick = e => confirmPayment(item.type, e.target.dataset.id, e.target);
+  return card;
+}
+
+async function confirmPayment(sheetType, id, btn) {
+  btn.disabled = true;
+  btn.textContent = "กำลังยืนยัน...";
+  try {
+    const res = await fetch(WEBAPP_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "staffConfirmPayment", data: { sheetType, id } })
+    });
+    const result = await res.json();
+    if (result.success) {
+      showToast("✅ ยืนยันสำเร็จ ระบบส่งข้อความแจ้งลูกค้าทาง LINE แล้ว");
+      await loadDashboard();
+    } else {
+      showToast("❌ " + result.message);
+      btn.disabled = false;
+      btn.textContent = "ยืนยันชำระเงินแล้ว";
+    }
+  } catch (err) {
+    showToast("เกิดข้อผิดพลาด: " + err.message);
+    btn.disabled = false;
+    btn.textContent = "ยืนยันชำระเงินแล้ว";
+  }
+}
+
+function showToast(text) {
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = text;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3500);
+}
+</script>
+</body>
+</html>
