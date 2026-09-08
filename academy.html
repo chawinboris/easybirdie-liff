@@ -541,6 +541,7 @@ async function chbLoadBays() {
     opt.textContent = b.bay_name;
     select.appendChild(opt);
   });
+  select.addEventListener("change", chbRefreshAvailability);
 }
 
 async function chbCheckMyCourse() {
@@ -628,9 +629,21 @@ async function chbRefreshAvailability() {
   document.getElementById("chbDurationBox").classList.add("hidden");
   if (!chbMyCoachId) { chbOccupiedHours = new Set(); chbRenderSlots(); return; }
   const date = document.getElementById("chbBookingDate").value;
-  const res = await fetch(`${WEBAPP_URL}?action=getCoachBookedSlots&coachId=${chbMyCoachId}&date=${date}`);
-  const slots = await res.json();
-  chbOccupiedHours = Array.isArray(slots) ? chbComputeOccupied(slots) : new Set();
+  const bayId = document.getElementById("chbBaySelect").value;
+
+  const coachRes = await fetch(`${WEBAPP_URL}?action=getCoachBookedSlots&coachId=${chbMyCoachId}&date=${date}`);
+  const coachSlots = await coachRes.json();
+  const coachOccupied = Array.isArray(coachSlots) ? chbComputeOccupied(coachSlots) : new Set();
+
+  let bayOccupied = new Set();
+  if (bayId) {
+    const bayRes = await fetch(`${WEBAPP_URL}?action=getBookedSlots&bayId=${bayId}&date=${date}`);
+    const baySlots = await bayRes.json();
+    bayOccupied = Array.isArray(baySlots) ? chbComputeOccupied(baySlots) : new Set();
+  }
+
+  // ช่องไหนโปรไม่ว่าง หรือ Bay ไม่ว่าง ให้ถือว่าจองไม่ได้ทั้งคู่
+  chbOccupiedHours = new Set([...coachOccupied, ...bayOccupied]);
   chbRenderSlots();
   chbUpdateSummary();
 }
