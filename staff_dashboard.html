@@ -135,6 +135,18 @@
   .status-pill.expired { background: var(--danger-bg); color: #ffb4a8; }
   .course-box { margin-top: 10px; padding: 10px 12px; background: rgba(201,162,75,0.06); border: 1px solid rgba(201,162,75,0.2); border-radius: 8px; }
   .course-box .cb-title { font-size: 11px; color: var(--gold-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+
+  /* ---------- academy page ---------- */
+  .coach-group { margin-bottom: 20px; }
+  .coach-group-title {
+    font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 700; color: var(--gold-light);
+    margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid var(--panel-border);
+  }
+  .lesson-card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px; padding: 14px; margin-bottom: 8px; }
+  .lesson-time {
+    font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; color: var(--gold-light);
+    display: inline-block; margin-bottom: 6px;
+  }
 </style>
 </head>
 <body>
@@ -152,6 +164,7 @@
     <div class="main-nav-btn active" data-page="overview">ภาพรวม</div>
     <div class="main-nav-btn" data-page="payments">รายการชำระเงิน</div>
     <div class="main-nav-btn" data-page="members">สมาชิก</div>
+    <div class="main-nav-btn" data-page="academy">Academy</div>
   </div>
 
   <!-- ================= PAGE: ภาพรวม ================= -->
@@ -204,6 +217,16 @@
     <input type="text" class="search-box" id="memberSearch" placeholder="ค้นหาชื่อ, เบอร์โทร, หรือเลขสมาชิก..." />
     <button class="refresh-btn" id="refreshMembersBtn">↻ รีเฟรชข้อมูล</button>
     <div id="membersList"></div>
+  </div>
+
+  <!-- ================= PAGE: Academy ================= -->
+  <div class="page" id="pageAcademy">
+    <div class="period-bar">
+      <input type="date" id="academyDate" />
+      <div class="period-btn" id="academyTodayBtn">วันนี้</div>
+    </div>
+    <button class="refresh-btn" id="refreshAcademyBtn">↻ รีเฟรชข้อมูล</button>
+    <div id="academyList"></div>
   </div>
 </div>
 
@@ -284,9 +307,22 @@ function initDashboard() {
   document.getElementById("refreshMembersBtn").onclick = loadMembersData;
   document.getElementById("memberSearch").addEventListener("input", renderMembersList);
 
+  // academy
+  document.getElementById("academyDate").valueAsDate = new Date();
+  document.getElementById("academyDate").addEventListener("click", function () {
+    if (typeof this.showPicker === "function") { try { this.showPicker(); } catch (e) {} }
+  });
+  document.getElementById("academyDate").addEventListener("change", loadAcademySchedule);
+  document.getElementById("academyTodayBtn").onclick = () => {
+    document.getElementById("academyDate").valueAsDate = new Date();
+    loadAcademySchedule();
+  };
+  document.getElementById("refreshAcademyBtn").onclick = loadAcademySchedule;
+
   loadOverviewStats();
   loadPaymentsData();
   loadMembersData();
+  loadAcademySchedule();
 }
 
 // ================= ภาพรวม =================
@@ -507,6 +543,59 @@ function showToast(text) {
   toast.textContent = text;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 3500);
+}
+
+// ================= Academy =================
+async function loadAcademySchedule() {
+  const date = document.getElementById("academyDate").value;
+  const list = document.getElementById("academyList");
+  list.innerHTML = `<div class="empty-state">กำลังโหลดข้อมูล...</div>`;
+  try {
+    const res = await fetch(`${WEBAPP_URL}?action=getAcademySchedule&date=${date}`);
+    const lessons = await res.json();
+    renderAcademySchedule(lessons);
+  } catch (err) {
+    list.innerHTML = `<div class="empty-state">โหลดข้อมูลไม่สำเร็จ: ${err.message}</div>`;
+  }
+}
+
+function renderAcademySchedule(lessons) {
+  const list = document.getElementById("academyList");
+  list.innerHTML = "";
+
+  if (!lessons || lessons.length === 0) {
+    list.innerHTML = `<div class="empty-state">วันนี้ยังไม่มีคิวเรียนกับโปร</div>`;
+    return;
+  }
+
+  // จัดกลุ่มตามชื่อโปร
+  const groups = {};
+  lessons.forEach(l => {
+    if (!groups[l.coach_name]) groups[l.coach_name] = [];
+    groups[l.coach_name].push(l);
+  });
+
+  Object.keys(groups).sort().forEach(coachName => {
+    const groupDiv = document.createElement("div");
+    groupDiv.className = "coach-group";
+    groupDiv.innerHTML = `<div class="coach-group-title">👤 ${coachName}</div>`;
+
+    groups[coachName].forEach(l => {
+      const card = document.createElement("div");
+      card.className = "lesson-card";
+      card.innerHTML = `
+        <div class="lesson-time">${l.start_time} - ${l.end_time}</div>
+        <div class="pending-row"><span>ผู้เรียน</span><span>${l.customer_name} (${l.phone})</span></div>
+        <div class="pending-row"><span>Bay</span><span>${l.bay_name}</span></div>
+        <div class="pending-row"><span>ประเภทคอร์ส</span><span>${l.course_type}</span></div>
+        <div class="pending-row"><span>ระยะเวลา</span><span>${l.hours} ชั่วโมง</span></div>
+        <div class="pending-row"><span>เลขที่จอง</span><span>${l.booking_id}</span></div>
+      `;
+      groupDiv.appendChild(card);
+    });
+
+    list.appendChild(groupDiv);
+  });
 }
 </script>
 </body>
