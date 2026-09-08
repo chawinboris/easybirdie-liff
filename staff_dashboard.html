@@ -4,6 +4,17 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>EasyBirdie Club — Staff Dashboard</title>
+<script>
+  // ⚠️ เช็คสิทธิ์ทันทีตั้งแต่บนสุดของหน้า ก่อนโหลดอะไรทั้งนั้น
+  // ถ้าไม่มี pin ที่ถูกต้องแนบมากับ URL จะเด้งกลับไปหน้า Login ทันที ไม่โหลดหน้า dashboard เลย
+  (function () {
+    const STAFF_PIN = "1234"; // ⚠️ ต้องตรงกับไฟล์ staff_login.html
+    const urlPin = new URLSearchParams(window.location.search).get("pin");
+    if (urlPin !== STAFF_PIN) {
+      window.location.replace("staff_login.html");
+    }
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
@@ -20,8 +31,6 @@
     background-image: radial-gradient(circle at 50% -10%, rgba(201,162,75,0.08), transparent 55%);
   }
   .wrap { max-width: 900px; margin: 0 auto; }
-  .denied { text-align: center; padding: 80px 20px; color: var(--muted); }
-  .denied a { color: var(--gold-light); }
 
   h1.brand-title { font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 24px; color: var(--gold-light); margin: 0 0 4px; }
   .brand-sub { color: var(--muted); font-size: 12px; }
@@ -130,12 +139,7 @@
 </head>
 <body>
 
-<div id="deniedWrap" class="denied hidden">
-  <p>กรุณาเข้าสู่ระบบก่อนใช้งาน</p>
-  <a href="staff_login.html">← กลับไปหน้า Login</a>
-</div>
-
-<div class="wrap hidden" id="dashboardWrap">
+<div class="wrap" id="dashboardWrap">
   <div class="top-row">
     <div>
       <h1 class="brand-title">Staff Dashboard</h1>
@@ -205,16 +209,10 @@
 
 <script>
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz4tmq9UXnu_TApw3YSrlRCq9Cxy152DmW47B5GGRKxrDOf2NksPkfL2EvkDbodH9_8lw/exec";
-const STAFF_PIN = "1234"; // ⚠️ ต้องตรงกับไฟล์ staff_login.html
 
-// ---------- ตรวจสอบการเข้าสู่ระบบ ----------
-const urlPin = new URLSearchParams(window.location.search).get("pin");
-if (urlPin !== STAFF_PIN) {
-  document.getElementById("deniedWrap").classList.remove("hidden");
-} else {
-  document.getElementById("dashboardWrap").classList.remove("hidden");
-  initDashboard();
-}
+// การเช็คสิทธิ์ทำไปแล้วในหัวไฟล์ (redirect ออกไปตั้งแต่ต้นถ้าไม่มี pin ที่ถูกต้อง)
+// โค้ดหลังจากนี้จะรันก็ต่อเมื่อผ่านการเช็คสิทธิ์แล้วเท่านั้น
+initDashboard();
 
 let dashboardData = null;
 let allMembers = [];
