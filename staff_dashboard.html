@@ -49,6 +49,11 @@
   .period-bar input {
     padding: 8px 12px; border-radius: 20px; border: 1px solid var(--panel-border);
     background: var(--panel); color: var(--ivory); font-size: 12.5px; font-family: 'Jost', sans-serif;
+    color-scheme: dark; min-width: 130px; cursor: pointer;
+  }
+  .period-bar input::-webkit-calendar-picker-indicator {
+    filter: invert(0.9);
+    cursor: pointer;
   }
 
   .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 14px 0; }
@@ -231,6 +236,17 @@ function initDashboard() {
   // period selector
   document.getElementById("periodDay").valueAsDate = new Date();
   document.getElementById("periodYear").value = new Date().getFullYear();
+
+  // ทำให้กดตรงไหนของกล่องก็เปิดปฏิทินได้ (ไม่ต้องเล็งไอคอนเล็กๆ)
+  ["periodDay", "periodMonth"].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener("click", () => {
+      if (typeof el.showPicker === "function") {
+        try { el.showPicker(); } catch (e) { /* บางเบราว์เซอร์ไม่รองรับ ปล่อยให้กดไอคอนแทน */ }
+      }
+    });
+  });
+
   document.querySelectorAll(".period-btn").forEach(btn => {
     btn.onclick = () => {
       document.querySelectorAll(".period-btn").forEach(b => b.classList.remove("active"));
