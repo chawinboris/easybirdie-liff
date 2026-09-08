@@ -245,6 +245,11 @@
 
   <div id="chbFormContainer" class="hidden">
     <div class="card">
+      <label>เลือก Bay ที่ต้องการใช้เรียน</label>
+      <select id="chbBaySelect"><option value="">กำลังโหลด...</option></select>
+    </div>
+
+    <div class="card">
       <label>วันที่ต้องการเรียน</label>
       <input type="date" id="chbBookingDate" />
       <label>เลือกเวลาเริ่ม</label>
@@ -521,7 +526,21 @@ async function initCoachPanel() {
   document.getElementById("chbNewBookingBtn").onclick = chbResetForm;
 
   await chbCheckMyCourse();
+  await chbLoadBays();
   await chbRefreshAvailability();
+}
+
+async function chbLoadBays() {
+  const res = await fetch(WEBAPP_URL + "?action=getBays");
+  const bays = await res.json();
+  const select = document.getElementById("chbBaySelect");
+  select.innerHTML = "";
+  bays.forEach(b => {
+    const opt = document.createElement("option");
+    opt.value = b.bay_id;
+    opt.textContent = b.bay_name;
+    select.appendChild(opt);
+  });
 }
 
 async function chbCheckMyCourse() {
@@ -643,6 +662,8 @@ async function chbSubmit() {
     document.getElementById("chbPhoneError").style.display = "block";
     return chbShowMsg("กรุณากรอกเบอร์โทรให้ถูกต้อง (10 หลัก ขึ้นต้นด้วย 0)", "error");
   }
+  const bayId = document.getElementById("chbBaySelect").value;
+  if (!bayId) return chbShowMsg("กรุณาเลือก Bay ที่จะใช้เรียน", "error");
 
   const hours = Number(document.getElementById("chbDuration").value);
   const startTime = String(chbSelectedStartHour).padStart(2, "0") + ":00";
@@ -653,7 +674,7 @@ async function chbSubmit() {
 
   const payload = {
     action: "createCoachingBooking",
-    data: { lineUserId, customerName: name, phone, bookingDate: date, startTime, endTime }
+    data: { lineUserId, customerName: name, phone, bayId, bookingDate: date, startTime, endTime }
   };
   try {
     const res = await fetch(WEBAPP_URL, {
