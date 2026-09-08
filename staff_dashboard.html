@@ -20,53 +20,77 @@
     background-image: radial-gradient(circle at 50% -10%, rgba(201,162,75,0.08), transparent 55%);
   }
   .wrap { max-width: 900px; margin: 0 auto; }
+  .denied { text-align: center; padding: 80px 20px; color: var(--muted); }
+  .denied a { color: var(--gold-light); }
 
-  /* ---------- PIN gate ---------- */
-  #pinGate {
-    min-height: 80vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-  }
-  #pinGate input {
-    margin-top: 16px; padding: 14px; width: 200px; text-align: center; letter-spacing: 6px; font-size: 20px;
-    border-radius: 8px; border: 1px solid var(--panel-border); background: var(--panel); color: var(--ivory);
-  }
-  #pinGate button {
-    margin-top: 14px; padding: 12px 28px; border-radius: 8px; border: 1px solid var(--gold);
-    background: linear-gradient(180deg, var(--gold-light), var(--gold)); color: #1a1408;
-    font-weight: 600; cursor: pointer; letter-spacing: 1px; text-transform: uppercase; font-size: 13px;
-  }
-  #pinError { color: #ffb4a8; font-size: 13px; margin-top: 10px; display: none; }
+  h1.brand-title { font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 24px; color: var(--gold-light); margin: 0 0 4px; }
+  .brand-sub { color: var(--muted); font-size: 12px; }
+  .top-row { display: flex; justify-content: space-between; align-items: flex-start; }
+  .logout-link { color: var(--muted); font-size: 12px; text-decoration: underline; cursor: pointer; }
 
-  h1.brand-title { font-family: 'Cormorant Garamond', serif; font-weight: 700; font-size: 26px; color: var(--gold-light); margin: 0 0 4px; }
-  .brand-sub { color: var(--muted); font-size: 12.5px; }
+  /* ---------- main nav ---------- */
+  .main-nav { display: flex; gap: 8px; margin: 20px 0 16px; overflow-x: auto; }
+  .main-nav-btn {
+    padding: 10px 18px; border-radius: 8px; border: 1px solid var(--panel-border);
+    background: var(--panel); color: var(--muted); font-size: 13.5px; white-space: nowrap; cursor: pointer; font-weight: 500;
+  }
+  .main-nav-btn.active { border-color: var(--gold); background: rgba(201,162,75,0.14); color: var(--gold-light); }
 
-  /* ---------- overview cards ---------- */
-  .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 20px 0; }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* ---------- overview ---------- */
+  .period-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+  .period-btn {
+    padding: 8px 14px; border-radius: 20px; border: 1px solid var(--panel-border);
+    background: var(--panel); color: var(--muted); font-size: 12.5px; cursor: pointer;
+  }
+  .period-btn.active { border-color: var(--gold); background: rgba(201,162,75,0.14); color: var(--gold-light); }
+  .period-bar input {
+    padding: 8px 12px; border-radius: 20px; border: 1px solid var(--panel-border);
+    background: var(--panel); color: var(--ivory); font-size: 12.5px; font-family: 'Jost', sans-serif;
+  }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 14px 0; }
   .stat-card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px; padding: 16px; text-align: center; }
-  .stat-card .num { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 700; color: var(--gold-light); }
-  .stat-card .lbl { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+  .stat-card .num { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 700; color: var(--gold-light); }
+  .stat-card .lbl { font-size: 10.5px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
   .stat-card.alert .num { color: #ff9d8f; }
+  .stat-card.wide { grid-column: span 2; }
+  .revenue-breakdown { display: flex; justify-content: center; gap: 18px; margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+  .revenue-breakdown b { color: var(--gold-light); }
 
-  /* ---------- tabs ---------- */
-  .tab-bar { display: flex; gap: 8px; margin: 20px 0 14px; overflow-x: auto; }
-  .tab-btn {
-    padding: 9px 16px; border-radius: 20px; border: 1px solid var(--panel-border);
-    background: var(--panel); color: var(--muted); font-size: 13px; white-space: nowrap; cursor: pointer;
+  /* ---------- payments page ---------- */
+  .sub-tab-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .sub-tab-btn {
+    padding: 8px 16px; border-radius: 20px; border: 1px solid var(--panel-border);
+    background: var(--panel); color: var(--muted); font-size: 12.5px; cursor: pointer;
   }
-  .tab-btn.active { border-color: var(--gold); background: rgba(201,162,75,0.14); color: var(--gold-light); }
+  .sub-tab-btn.active { border-color: var(--gold); background: rgba(201,162,75,0.14); color: var(--gold-light); }
+  .type-filter-bar { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; }
+  .type-filter-btn {
+    padding: 6px 12px; border-radius: 16px; border: 1px solid var(--panel-border);
+    background: transparent; color: var(--muted); font-size: 11.5px; white-space: nowrap; cursor: pointer;
+  }
+  .type-filter-btn.active { border-color: var(--gold); color: var(--gold-light); }
 
-  /* ---------- pending item cards ---------- */
   .pending-card {
     background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px;
     padding: 16px; margin-bottom: 10px;
   }
-  .pending-card .type-tag {
+  .pending-card.paid { opacity: 0.85; }
+  .type-tag {
     display: inline-block; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase;
     color: var(--gold-light); background: rgba(201,162,75,0.14); padding: 3px 8px; border-radius: 5px; margin-bottom: 8px;
   }
+  .type-tag.status-paid { color: #9fd8b8; background: rgba(74,220,150,0.12); }
   .pending-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 3px 0; }
   .pending-row span:first-child { color: var(--muted); }
+  .proof-row { margin-top: 8px; }
+  .proof-row input[type=file] { font-size: 11.5px; color: var(--muted); width: 100%; }
+  .proof-link { font-size: 12px; color: var(--gold-light); text-decoration: underline; }
   .confirm-btn {
-    width: 100%; margin-top: 12px; padding: 11px; border-radius: 7px; border: 1px solid var(--gold);
+    width: 100%; margin-top: 10px; padding: 11px; border-radius: 7px; border: 1px solid var(--gold);
     background: linear-gradient(180deg, var(--gold-light), var(--gold)); color: #1a1408;
     font-weight: 600; font-size: 13px; letter-spacing: 0.5px; text-transform: uppercase; cursor: pointer;
   }
@@ -80,172 +104,387 @@
   .toast {
     position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
     background: var(--confirm-bg); color: var(--gold-light); padding: 12px 20px; border-radius: 8px;
-    font-size: 13.5px; border: 1px solid rgba(201,162,75,0.3); z-index: 100;
+    font-size: 13.5px; border: 1px solid rgba(201,162,75,0.3); z-index: 100; max-width: 90%; text-align: center;
   }
+
+  /* ---------- members page ---------- */
+  .search-box {
+    width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--panel-border);
+    background: var(--panel); color: var(--ivory); font-family: 'Jost', sans-serif; font-size: 14px; margin-bottom: 14px;
+  }
+  .member-card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px; padding: 16px; margin-bottom: 10px; }
+  .member-card.expired { border-color: #5c2b26; }
+  .member-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .member-head .mid { font-family: 'Cormorant Garamond', serif; font-size: 18px; font-weight: 700; color: var(--gold-light); }
+  .status-pill { font-size: 10.5px; padding: 3px 9px; border-radius: 12px; letter-spacing: 0.5px; }
+  .status-pill.active { background: rgba(74,220,150,0.14); color: #9fd8b8; }
+  .status-pill.expired { background: var(--danger-bg); color: #ffb4a8; }
+  .course-box { margin-top: 10px; padding: 10px 12px; background: rgba(201,162,75,0.06); border: 1px solid rgba(201,162,75,0.2); border-radius: 8px; }
+  .course-box .cb-title { font-size: 11px; color: var(--gold-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
 </style>
 </head>
 <body>
 
-<div id="pinGate">
-  <h1 class="brand-title">EasyBirdie Club</h1>
-  <div class="brand-sub">Staff Dashboard — กรุณาใส่รหัสผ่านเพื่อเข้าใช้งาน</div>
-  <input type="password" id="pinInput" maxlength="6" inputmode="numeric" placeholder="••••" />
-  <div id="pinError">รหัสไม่ถูกต้อง กรุณาลองใหม่</div>
-  <button id="pinSubmit">เข้าสู่ระบบ</button>
+<div id="deniedWrap" class="denied hidden">
+  <p>กรุณาเข้าสู่ระบบก่อนใช้งาน</p>
+  <a href="staff_login.html">← กลับไปหน้า Login</a>
 </div>
 
 <div class="wrap hidden" id="dashboardWrap">
-  <h1 class="brand-title">Staff Dashboard</h1>
-  <div class="brand-sub">ภาพรวมระบบ EasyBirdie Club</div>
-
-  <div class="stats-grid">
-    <div class="stat-card"><div class="num" id="statToday">-</div><div class="lbl">การจองวันนี้ (Bay)</div></div>
-    <div class="stat-card alert"><div class="num" id="statPending">-</div><div class="lbl">รอตรวจสอบการชำระเงิน</div></div>
-    <div class="stat-card"><div class="num" id="statMembers">-</div><div class="lbl">สมาชิก Active</div></div>
-    <div class="stat-card"><div class="num" id="statRevenue">-</div><div class="lbl">ยอดขายเดือนนี้ (บาท)</div></div>
+  <div class="top-row">
+    <div>
+      <h1 class="brand-title">Staff Dashboard</h1>
+      <div class="brand-sub">EasyBirdie Club</div>
+    </div>
+    <a class="logout-link" href="staff_login.html">ออกจากระบบ</a>
   </div>
 
-  <button class="refresh-btn" id="refreshBtn">↻ รีเฟรชข้อมูล</button>
-
-  <div class="tab-bar">
-    <div class="tab-btn active" data-tab="all">ทั้งหมด</div>
-    <div class="tab-btn" data-tab="booking">จอง Bay</div>
-    <div class="tab-btn" data-tab="membership">Member</div>
-    <div class="tab-btn" data-tab="course">คอร์สเรียน</div>
+  <div class="main-nav">
+    <div class="main-nav-btn active" data-page="overview">ภาพรวม</div>
+    <div class="main-nav-btn" data-page="payments">รายการชำระเงิน</div>
+    <div class="main-nav-btn" data-page="members">สมาชิก</div>
   </div>
 
-  <div id="pendingList"></div>
+  <!-- ================= PAGE: ภาพรวม ================= -->
+  <div class="page active" id="pageOverview">
+    <div class="period-bar">
+      <div class="period-btn active" data-period="day">รายวัน</div>
+      <div class="period-btn" data-period="month">รายเดือน</div>
+      <div class="period-btn" data-period="year">รายปี</div>
+      <input type="date" id="periodDay" />
+      <input type="month" id="periodMonth" class="hidden" />
+      <input type="number" id="periodYear" class="hidden" placeholder="2026" min="2020" max="2100" />
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card"><div class="num" id="statBayBookings">-</div><div class="lbl">การจอง Bay</div></div>
+      <div class="stat-card"><div class="num" id="statCoachBookings">-</div><div class="lbl">คิวเรียนกับโปร</div></div>
+      <div class="stat-card"><div class="num" id="statNewCourses">-</div><div class="lbl">คอร์สที่ขายได้</div></div>
+      <div class="stat-card"><div class="num" id="statNewMembers">-</div><div class="lbl">สมาชิกใหม่</div></div>
+      <div class="stat-card wide">
+        <div class="num" id="statRevenue">-</div><div class="lbl">ยอดขายรวม (บาท)</div>
+        <div class="revenue-breakdown">
+          <span>Bay <b id="revBay">0</b></span>
+          <span>คอร์ส <b id="revCourse">0</b></span>
+          <span>Member <b id="revMember">0</b></span>
+        </div>
+      </div>
+      <div class="stat-card alert wide"><div class="num" id="statPendingCount">-</div><div class="lbl">รอตรวจสอบการชำระเงิน (ทั้งหมด)</div></div>
+    </div>
+    <button class="refresh-btn" id="refreshOverviewBtn">↻ รีเฟรชข้อมูล</button>
+  </div>
+
+  <!-- ================= PAGE: รายการชำระเงิน ================= -->
+  <div class="page" id="pagePayments">
+    <div class="sub-tab-bar">
+      <div class="sub-tab-btn active" data-status="pending">รอชำระ</div>
+      <div class="sub-tab-btn" data-status="paid">ชำระแล้ว</div>
+    </div>
+    <div class="type-filter-bar">
+      <div class="type-filter-btn active" data-type="all">ทั้งหมด</div>
+      <div class="type-filter-btn" data-type="booking">จอง Bay</div>
+      <div class="type-filter-btn" data-type="membership">Member</div>
+      <div class="type-filter-btn" data-type="course">คอร์สเรียน</div>
+    </div>
+    <button class="refresh-btn" id="refreshPaymentsBtn">↻ รีเฟรชข้อมูล</button>
+    <div id="pendingList"></div>
+  </div>
+
+  <!-- ================= PAGE: สมาชิก ================= -->
+  <div class="page" id="pageMembers">
+    <input type="text" class="search-box" id="memberSearch" placeholder="ค้นหาชื่อ, เบอร์โทร, หรือเลขสมาชิก..." />
+    <button class="refresh-btn" id="refreshMembersBtn">↻ รีเฟรชข้อมูล</button>
+    <div id="membersList"></div>
+  </div>
 </div>
 
 <script>
 const WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz4tmq9UXnu_TApw3YSrlRCq9Cxy152DmW47B5GGRKxrDOf2NksPkfL2EvkDbodH9_8lw/exec";
-const STAFF_PIN = "1234"; // ⚠️ เปลี่ยนรหัสนี้เป็นรหัสที่ต้องการ (ป้องกันขั้นพื้นฐานเท่านั้น ไม่ใช่ระบบความปลอดภัยเต็มรูปแบบ)
+const STAFF_PIN = "1234"; // ⚠️ ต้องตรงกับไฟล์ staff_login.html
 
-let currentFilter = "all";
-let dashboardData = null;
-
-document.getElementById("pinSubmit").onclick = checkPin;
-document.getElementById("pinInput").addEventListener("keypress", e => { if (e.key === "Enter") checkPin(); });
-function checkPin() {
-  const val = document.getElementById("pinInput").value;
-  if (val === STAFF_PIN) {
-    document.getElementById("pinGate").classList.add("hidden");
-    document.getElementById("dashboardWrap").classList.remove("hidden");
-    loadDashboard();
-  } else {
-    document.getElementById("pinError").style.display = "block";
-  }
+// ---------- ตรวจสอบการเข้าสู่ระบบ ----------
+const urlPin = new URLSearchParams(window.location.search).get("pin");
+if (urlPin !== STAFF_PIN) {
+  document.getElementById("deniedWrap").classList.remove("hidden");
+} else {
+  document.getElementById("dashboardWrap").classList.remove("hidden");
+  initDashboard();
 }
 
-document.getElementById("refreshBtn").onclick = loadDashboard;
-document.querySelectorAll(".tab-btn").forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    currentFilter = btn.dataset.tab;
-    renderPendingList();
-  };
-});
+let dashboardData = null;
+let allMembers = [];
+let currentPaymentStatus = "pending";
+let currentTypeFilter = "all";
+let currentPeriodType = "day";
 
-async function loadDashboard() {
+function initDashboard() {
+  // main nav
+  document.querySelectorAll(".main-nav-btn").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll(".main-nav-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      document.getElementById("page" + btn.dataset.page.charAt(0).toUpperCase() + btn.dataset.page.slice(1)).classList.add("active");
+    };
+  });
+
+  // period selector
+  document.getElementById("periodDay").valueAsDate = new Date();
+  document.getElementById("periodYear").value = new Date().getFullYear();
+  document.querySelectorAll(".period-btn").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll(".period-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentPeriodType = btn.dataset.period;
+      document.getElementById("periodDay").classList.toggle("hidden", currentPeriodType !== "day");
+      document.getElementById("periodMonth").classList.toggle("hidden", currentPeriodType !== "month");
+      document.getElementById("periodYear").classList.toggle("hidden", currentPeriodType !== "year");
+      loadOverviewStats();
+    };
+  });
+  document.getElementById("periodDay").addEventListener("change", loadOverviewStats);
+  document.getElementById("periodMonth").addEventListener("change", loadOverviewStats);
+  document.getElementById("periodYear").addEventListener("change", loadOverviewStats);
+  document.getElementById("refreshOverviewBtn").onclick = loadOverviewStats;
+
+  // payments sub-tabs
+  document.querySelectorAll(".sub-tab-btn").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll(".sub-tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentPaymentStatus = btn.dataset.status;
+      renderPaymentsList();
+    };
+  });
+  document.querySelectorAll(".type-filter-btn").forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll(".type-filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentTypeFilter = btn.dataset.type;
+      renderPaymentsList();
+    };
+  });
+  document.getElementById("refreshPaymentsBtn").onclick = loadPaymentsData;
+
+  // members
+  document.getElementById("refreshMembersBtn").onclick = loadMembersData;
+  document.getElementById("memberSearch").addEventListener("input", renderMembersList);
+
+  loadOverviewStats();
+  loadPaymentsData();
+  loadMembersData();
+}
+
+// ================= ภาพรวม =================
+function getPeriodValue() {
+  if (currentPeriodType === "day") return document.getElementById("periodDay").value;
+  if (currentPeriodType === "month") return document.getElementById("periodMonth").value;
+  if (currentPeriodType === "year") return String(document.getElementById("periodYear").value);
+}
+
+async function loadOverviewStats() {
+  const periodValue = getPeriodValue();
+  if (!periodValue) return;
+  try {
+    const res = await fetch(`${WEBAPP_URL}?action=getStatsForPeriod&periodType=${currentPeriodType}&periodValue=${periodValue}`);
+    const s = await res.json();
+    document.getElementById("statBayBookings").textContent = s.bayBookingsCount;
+    document.getElementById("statCoachBookings").textContent = s.coachBookingsCount;
+    document.getElementById("statNewCourses").textContent = s.courseCount;
+    document.getElementById("statNewMembers").textContent = s.newMembers;
+    document.getElementById("statRevenue").textContent = s.totalRevenue.toLocaleString();
+    document.getElementById("revBay").textContent = s.breakdown.bayRevenue.toLocaleString();
+    document.getElementById("revCourse").textContent = s.breakdown.courseRevenue.toLocaleString();
+    document.getElementById("revMember").textContent = s.breakdown.memberRevenue.toLocaleString();
+  } catch (err) { console.error(err); }
+
+  try {
+    const res2 = await fetch(WEBAPP_URL + "?action=getDashboardData");
+    const d = await res2.json();
+    document.getElementById("statPendingCount").textContent = d.stats.pendingCount;
+  } catch (err) { console.error(err); }
+}
+
+// ================= รายการชำระเงิน =================
+async function loadPaymentsData() {
   document.getElementById("pendingList").innerHTML = `<div class="empty-state">กำลังโหลดข้อมูล...</div>`;
   try {
     const res = await fetch(WEBAPP_URL + "?action=getDashboardData");
     dashboardData = await res.json();
-    renderStats();
-    renderPendingList();
+    renderPaymentsList();
   } catch (err) {
     document.getElementById("pendingList").innerHTML = `<div class="empty-state">โหลดข้อมูลไม่สำเร็จ: ${err.message}</div>`;
   }
 }
 
-function renderStats() {
-  const s = dashboardData.stats;
-  document.getElementById("statToday").textContent = s.todayBookings;
-  document.getElementById("statPending").textContent = s.pendingCount;
-  document.getElementById("statMembers").textContent = s.activeMembers;
-  document.getElementById("statRevenue").textContent = s.revenue.toLocaleString();
-}
-
-function renderPendingList() {
+function renderPaymentsList() {
   const list = document.getElementById("pendingList");
   list.innerHTML = "";
+  if (!dashboardData) return;
 
+  const isPaid = currentPaymentStatus === "paid";
   const items = [];
-  dashboardData.pendingBookings.forEach(b => items.push({ type: "booking", data: b }));
-  dashboardData.pendingMemberships.forEach(m => items.push({ type: "membership", data: m }));
-  dashboardData.pendingCourses.forEach(c => items.push({ type: "course", data: c }));
+  (isPaid ? dashboardData.paidBookings : dashboardData.pendingBookings).forEach(b => items.push({ type: "booking", data: b }));
+  (isPaid ? dashboardData.paidMemberships : dashboardData.pendingMemberships).forEach(m => items.push({ type: "membership", data: m }));
+  (isPaid ? dashboardData.paidCourses : dashboardData.pendingCourses).forEach(c => items.push({ type: "course", data: c }));
 
-  const filtered = currentFilter === "all" ? items : items.filter(i => i.type === currentFilter);
+  const filtered = currentTypeFilter === "all" ? items : items.filter(i => i.type === currentTypeFilter);
 
   if (filtered.length === 0) {
-    list.innerHTML = `<div class="empty-state">✓ ไม่มีรายการรอตรวจสอบ</div>`;
+    list.innerHTML = `<div class="empty-state">${isPaid ? "ยังไม่มีรายการที่ชำระแล้ว" : "✓ ไม่มีรายการรอตรวจสอบ"}</div>`;
     return;
   }
-
-  filtered.forEach(item => list.appendChild(renderCard(item)));
+  filtered.forEach(item => list.appendChild(renderPaymentCard(item, isPaid)));
 }
 
-function renderCard(item) {
+function renderPaymentCard(item, isPaid) {
   const card = document.createElement("div");
-  card.className = "pending-card";
+  card.className = "pending-card" + (isPaid ? " paid" : "");
   const d = item.data;
+  const tagClass = isPaid ? "type-tag status-paid" : "type-tag";
+  const tagLabel = { booking: "จอง Bay", membership: "Member", course: "คอร์สเรียน" }[item.type];
 
+  let bodyHtml = "";
   if (item.type === "booking") {
-    card.innerHTML = `
-      <div class="type-tag">จอง Bay</div>
+    bodyHtml = `
       <div class="pending-row"><span>เลขที่จอง</span><span>${d.booking_id}</span></div>
       <div class="pending-row"><span>ลูกค้า</span><span>${d.customer_name} (${d.phone})</span></div>
       <div class="pending-row"><span>วันเวลา</span><span>${d.booking_date} ${d.start_time}-${d.end_time}</span></div>
-      <div class="pending-row"><span>ยอด</span><span>${Number(d.total_price).toLocaleString()} บาท (${d.payment_method})</span></div>
-      <button class="confirm-btn" data-type="booking" data-id="${d.booking_id}">ยืนยันชำระเงินแล้ว</button>
-    `;
+      <div class="pending-row"><span>ยอด</span><span>${Number(d.total_price).toLocaleString()} บาท (${d.payment_method})</span></div>`;
   } else if (item.type === "membership") {
-    card.innerHTML = `
-      <div class="type-tag">Member</div>
+    bodyHtml = `
       <div class="pending-row"><span>เลขสมาชิก</span><span>${d.member_id}</span></div>
       <div class="pending-row"><span>ลูกค้า</span><span>${d.name} (${d.phone})</span></div>
-      <div class="pending-row"><span>ประเภท</span><span>${d.member_type === "PAID" ? "รายปี (3,000 บาท)" : "จากคอร์สเรียน"}</span></div>
-      <button class="confirm-btn" data-type="membership" data-id="${d.member_id}">ยืนยันชำระเงินแล้ว</button>
-    `;
+      <div class="pending-row"><span>ประเภท</span><span>${d.member_type === "PAID" ? "รายปี (3,000 บาท)" : "จากคอร์สเรียน"}</span></div>`;
   } else if (item.type === "course") {
-    card.innerHTML = `
-      <div class="type-tag">คอร์สเรียน</div>
+    bodyHtml = `
       <div class="pending-row"><span>เลขคอร์ส</span><span>${d.course_id}</span></div>
       <div class="pending-row"><span>ลูกค้า</span><span>${d.customer_name} (${d.phone})</span></div>
       <div class="pending-row"><span>คอร์ส</span><span>${d.course_type === "CHILD" ? "Children" : "Adult"} (${d.total_hours} ชม.)</span></div>
-      <div class="pending-row"><span>ยอด</span><span>${Number(d.price).toLocaleString()} บาท (${d.payment_method})</span></div>
-      <button class="confirm-btn" data-type="course" data-id="${d.course_id}">ยืนยันชำระเงินแล้ว</button>
-    `;
+      <div class="pending-row"><span>ยอด</span><span>${Number(d.price).toLocaleString()} บาท (${d.payment_method})</span></div>`;
   }
 
-  card.querySelector(".confirm-btn").onclick = e => confirmPayment(item.type, e.target.dataset.id, e.target);
+  const proofUrl = d.payment_proof_url;
+  const actionHtml = isPaid
+    ? (proofUrl ? `<a class="proof-link" href="${proofUrl}" target="_blank">📎 ดูหลักฐานการชำระเงิน</a>` : `<span style="font-size:12px;color:var(--muted)">ไม่มีไฟล์แนบ</span>`)
+    : `
+      <div class="proof-row"><input type="file" accept="image/*" class="proofInput" /></div>
+      <button class="confirm-btn">ยืนยันชำระเงินแล้ว</button>`;
+
+  card.innerHTML = `<div class="${tagClass}">${tagLabel}</div>${bodyHtml}${actionHtml}`;
+
+  if (!isPaid) {
+    const idMap = { booking: d.booking_id, membership: d.member_id, course: d.course_id };
+    card.querySelector(".confirm-btn").onclick = e => confirmPayment(item.type, idMap[item.type], card, e.target);
+  }
   return card;
 }
 
-async function confirmPayment(sheetType, id, btn) {
+async function confirmPayment(sheetType, id, card, btn) {
   btn.disabled = true;
   btn.textContent = "กำลังยืนยัน...";
-  try {
-    const res = await fetch(WEBAPP_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "staffConfirmPayment", data: { sheetType, id } })
-    });
-    const result = await res.json();
-    if (result.success) {
-      showToast("✅ ยืนยันสำเร็จ ระบบส่งข้อความแจ้งลูกค้าทาง LINE แล้ว");
-      await loadDashboard();
-    } else {
-      showToast("❌ " + result.message);
+  const fileInput = card.querySelector(".proofInput");
+  const file = fileInput && fileInput.files[0];
+
+  const payload = { sheetType, id };
+
+  const doConfirm = async () => {
+    try {
+      const res = await fetch(WEBAPP_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "staffConfirmPayment", data: payload })
+      });
+      const result = await res.json();
+      if (result.success) {
+        showToast("✅ ยืนยันสำเร็จ ระบบส่งข้อความแจ้งลูกค้าทาง LINE แล้ว");
+        await loadPaymentsData();
+        loadOverviewStats();
+      } else {
+        showToast("❌ " + result.message);
+        btn.disabled = false;
+        btn.textContent = "ยืนยันชำระเงินแล้ว";
+      }
+    } catch (err) {
+      showToast("เกิดข้อผิดพลาด: " + err.message);
       btn.disabled = false;
       btn.textContent = "ยืนยันชำระเงินแล้ว";
     }
-  } catch (err) {
-    showToast("เกิดข้อผิดพลาด: " + err.message);
-    btn.disabled = false;
-    btn.textContent = "ยืนยันชำระเงินแล้ว";
+  };
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      payload.proofImageBase64 = reader.result;
+      payload.proofFileName = file.name;
+      doConfirm();
+    };
+    reader.readAsDataURL(file);
+  } else {
+    doConfirm();
   }
+}
+
+// ================= สมาชิก =================
+async function loadMembersData() {
+  document.getElementById("membersList").innerHTML = `<div class="empty-state">กำลังโหลดข้อมูล...</div>`;
+  try {
+    const res = await fetch(WEBAPP_URL + "?action=getAllMembers");
+    allMembers = await res.json();
+    renderMembersList();
+  } catch (err) {
+    document.getElementById("membersList").innerHTML = `<div class="empty-state">โหลดข้อมูลไม่สำเร็จ: ${err.message}</div>`;
+  }
+}
+
+function renderMembersList() {
+  const list = document.getElementById("membersList");
+  const query = document.getElementById("memberSearch").value.trim().toLowerCase();
+
+  const filtered = allMembers.filter(m =>
+    !query ||
+    String(m.name).toLowerCase().includes(query) ||
+    String(m.phone).includes(query) ||
+    String(m.member_id).toLowerCase().includes(query)
+  );
+
+  list.innerHTML = "";
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-state">ไม่พบสมาชิกที่ค้นหา</div>`;
+    return;
+  }
+
+  filtered.forEach(m => {
+    const card = document.createElement("div");
+    card.className = "member-card" + (m.is_expired ? " expired" : "");
+    let coursesHtml = "";
+    if (m.has_course) {
+      coursesHtml = m.courses.map(c => `
+        <div class="course-box">
+          <div class="cb-title">คอร์สเรียน (${c.course_type === "CHILD" ? "Children" : "Adult"})</div>
+          <div class="pending-row"><span>เลขคอร์ส</span><span>${c.course_id}</span></div>
+          <div class="pending-row"><span>โปร</span><span>${c.coach_name}</span></div>
+          <div class="pending-row"><span>ชั่วโมงคงเหลือ</span><span>${c.hours_remaining} / ${c.total_hours} ชม.</span></div>
+          <div class="pending-row"><span>คอร์สหมดอายุ</span><span>${c.expiry_date}</span></div>
+          <div class="pending-row"><span>สถานะจ่ายเงิน</span><span>${c.payment_status === "paid" ? "จ่ายแล้ว" : "รอตรวจสอบ"}</span></div>
+        </div>
+      `).join("");
+    }
+
+    card.innerHTML = `
+      <div class="member-head">
+        <span class="mid">${m.member_id}</span>
+        <span class="status-pill ${m.is_expired ? "expired" : "active"}">${m.is_expired ? "หมดอายุ" : "Active"}</span>
+      </div>
+      <div class="pending-row"><span>ชื่อ</span><span>${m.name}</span></div>
+      <div class="pending-row"><span>เบอร์โทร</span><span>${m.phone}</span></div>
+      <div class="pending-row"><span>ประเภท</span><span>${m.member_type === "PAID" ? "สมัครตรง (รายปี)" : "จากคอร์สเรียน"}</span></div>
+      <div class="pending-row"><span>วันหมดอายุสมาชิก</span><span>${m.expiry_date}</span></div>
+      <div class="pending-row"><span>สถานะจ่ายเงิน</span><span>${m.payment_status === "paid" ? "จ่ายแล้ว" : "รอตรวจสอบ"}</span></div>
+      ${coursesHtml}
+    `;
+    list.appendChild(card);
+  });
 }
 
 function showToast(text) {
